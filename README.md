@@ -1,4 +1,4 @@
-<h1 align="center"> :satellite: :earth_africa: AKR 3D Map :radio: :globe_with_meridians: </h1> 
+<h1 align="center"> 📡 🌍 AKR 3D Map 📻 🌐 </h1> 
 
 **Work in Progress as of Dec 2025**
 
@@ -9,7 +9,7 @@ Here we provide code to read in various AKR event lists, and map their occurrenc
 * [ARF](https://github.com/arfogg)'s work at DIAS was supported by Taighde Éireann - Research Ireland Laureate Consolidator award SOLMEX to [CMJ](https://github.com/caitrionajackman).
 
 <p align="center">
-<img src="SCOSTEP_logo.png" width="200">
-<img src="PRESTO_logo.png" width="100">
-<img src="Research_Ireland_RGB_logo_green.webp" width="200">
+<img src="assets/SCOSTEP_logo.png" width="200">
+<img src="assets/PRESTO_logo.png" width="100">
+<img src="assets/Research_Ireland_RGB_logo_green.webp" width="200">
 </p>
