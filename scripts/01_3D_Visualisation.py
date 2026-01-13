@@ -3,11 +3,43 @@
 import numpy as np
 import xarray as xr
 import plotly.graph_objects as go
+from pydantic import validate_call, Field
+from typing_extensions import Annotated
 
 type NumericType = int | float # Customised type hint
+PositiveNumber = Annotated[NumericType, Field(gt=0)]
+
 #%%
-# Function to create 3D grid
-def create_3d_grid(
+# Function to create 1D grid
+@validate_call
+def creates_bin1d(start:NumericType , end:NumericType , bin_size:PositiveNumber=2) -> tuple[np.ndarray, np.ndarray]:
+    """
+    Create bin edges and centers for one dimension.
+    
+    Args:
+        start: Starting value
+        end: Ending value  
+        bin_size: Size of each bin (default: 2)
+    
+    Returns:
+        Tuple of (edges, centers)
+    
+    Example:
+        >>> edges, centers = create_bins_1d(0, 10, 2)
+        >>> edges
+        array([0, 2, 4, 6, 8, 10])
+        >>> centers
+        array([1., 3., 5., 7., 9.])
+    """    
+    if end <= start:
+        raise ValueError(f"end ({end}) must be greater than start ({start})")
+
+    bin_edge = np.arange(start, end+bin_size, bin_size)
+    bin_center = (bin_edge[:-1] + bin_edge[1:])/2
+    return (bin_edge, bin_center)
+
+# Creating Cartesian grid
+def create_cartesian_grid(
         x_range: tuple[NumericType, NumericType] = (-15, 15),
         y_range: tuple[NumericType, NumericType] = (-15, 15),
         z_range: tuple[NumericType, NumericType] = (-10, 10),
@@ -15,15 +47,10 @@ def create_3d_grid(
 )-> xr.Dataset:
     """"""
         
-        # Creating edges
-    x_edge: np.ndarray = np.arange(x_range[0], x_range[1], bin_size)
-    y_edge: np.ndarray = np.arange(y_range[0], y_range[1], bin_size)
-    z_edge: np.ndarray = np.arange(z_range[0], z_range[1], bin_size)
-
-    # Creating centers
-    x_centers: np.ndarray = (x_edge[:-1]+x_edge[1:])/2
-    y_centers: np.ndarray = (y_edge[:-1]+y_edge[1:])/2
-    z_centers: np.ndarray = (z_edge[:-1]+z_edge[1:])/2
+    # Creating edges
+    x_edges, x_centers = creates_bin1d(x_range[0], x_range[1], bin_size)
+    y_edges, y_centers = creates_bin1d(y_range[0], y_range[1], bin_size)
+    z_edges, z_centers = creates_bin1d(z_range[0], z_range[1], bin_size)
 
     # Axis lengths
     x_n: int = len(x_centers)
@@ -52,9 +79,9 @@ def create_3d_grid(
         "z": (['z'], z_centers, {'units': 'R_E', 'dtype': 'float64'}),
 
         # Edges
-        "x_edge": (['x_edge'], x_edge, {'units': 'R_E', 'dtype': 'float64'}),
-        "y_edge": (['y_edge'], y_edge, {'units': 'R_E', 'dtype': 'float64'}),
-        "z_edge": (['z_edge'], z_edge, {'units': 'R_E', 'dtype': 'float64'}) 
+        "x_edges": (['x_edges'], x_edges, {'units': 'R_E', 'dtype': 'float64'}),
+        "y_edges": (['y_edges'], y_edges, {'units': 'R_E', 'dtype': 'float64'}),
+        "z_edges": (['z_edges'], z_edges, {'units': 'R_E', 'dtype': 'float64'}) 
         },
         attrs ={
         'coordinate_system': 'GSE',
@@ -64,9 +91,24 @@ def create_3d_grid(
         }
     )
     return grid
+
+#Creating lt_r_mlat_grid
+def create_lt_r_mlat_grid(
+    lt_range: tuple[NumericType, NumericType] = (0, 24),
+    r_range: tuple[NumericType, NumericType] = (0, 150),
+    mlat_range: tuple[NumericType, NumericType] = (-90, 90),
+    lt_bin: PositiveNumber = 1.0,
+    r_bin: PositiveNumber = 25.0,
+    mlat_bin: PositiveNumber = 5.0
+):
+    lt_edge, lt_centers = creates_bin1d(lt_range[0], lt_range[1], lt_bin)
+    r_edge, r_centers = creates_bin1d(r_range[0], r_range[1], r_bin)
+    mlat_edge, mlat_centemlats = creates_bin1d(mlat_range[0], mlat_range[1], mlat_bin)
+    
+    # Start from here!
 #%%
 # Create the grid
-grid = create_3d_grid(
+grid = create_cartesian_grid(
     x_range=(-15.0, 15.0),
     y_range=(-15.0, 15.0),
     z_range=(-10.0, 10.0),
@@ -78,9 +120,9 @@ print(f"Shape: {grid.residence_time.shape}")
 
 # Access Edges
 # bin_size = grid.attrs['bin_size']
-x_edges = grid.x_edge.values
-y_edges = grid.y_edge.values
-z_edges = grid.z_edge.values
+x_edges = grid.x_edges.values
+y_edges = grid.y_edges.values
+z_edges = grid.z_edges.values
 
 #%%
 # Create figure
@@ -145,14 +187,14 @@ fig.add_trace(go.Surface(
 
 # Layout
 fig.update_layout(
-    # ========== GLOBAL FONT ==========
+    # Global font
     font=dict(
         family="Times New Roman, Times, serif",
         size=14,
         color="#1a1a1a"
     ),
     
-    # ========== TITLE ==========
+    # Figure title
     title=dict(
         text='3D Grid with Earth and Sun' if (sun and earth) else '3D Grid of Earth',
         font=dict(size=22),
@@ -160,7 +202,7 @@ fig.update_layout(
         xanchor='center'
     ),
     
-    # ========== 3D SCENE ==========
+    # 3D scene
     scene=dict(
         xaxis=dict(
             title=dict(text='X (R<sub>E</sub>)', font=dict(size=16)),
@@ -184,21 +226,21 @@ fig.update_layout(
             backgroundcolor='#f5f5f5'
         ),
         
-        # ========== FIXED CAMERA (X horizontal, Z vertical) ==========
+        # Fixed camera (X horizontal, Z vertical)
         camera=dict(
             eye=dict(x=0.3, y=2.5, z=0.8),  # View from Y-axis, slightly elevated
             center=dict(x=0, y=0, z=0),
             up=dict(x=0, y=0, z=1)          # Z points UP
         ),
         
-        # ========== PROPER SCALING ==========
+        # Proper scaling
         aspectmode='data',  # True scale based on data ranges
         
         # Optional: Add this for better interaction
         dragmode='orbit'
     ),
     
-    # ========== SIZE & BACKGROUND ==========
+    # Size and background
     width=1000,
     height=800,
     paper_bgcolor='white',
