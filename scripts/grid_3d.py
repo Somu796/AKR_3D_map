@@ -361,19 +361,19 @@ class LTRMLat():
 
         # Get coordinates
         lt = self.grid.coords['local_time'].values
-        r = self.grid.coords['radius'].values  
-        mlat = self.grid.coords['mlat'].values
+        # r = self.grid.coords['radius'].values  
+        # mlat = self.grid.coords['mlat'].values
         
-        # Create meshgrid
-        LT, R, MLAT = np.meshgrid(lt, r, mlat, indexing='ij')
+        # # Create meshgrid
+        # LT, R, MLAT = np.meshgrid(lt, r, mlat, indexing='ij')
         
-        # Convert to Cartesian
-        theta = (12 - LT) * np.pi / 12  # Hours to radians
-        mlat_rad = np.radians(MLAT)
+        # # Convert to Cartesian
+        # theta = (12 - LT) * np.pi / 12  # Hours to radians
+        # mlat_rad = np.radians(MLAT)
         
-        X = R * np.cos(mlat_rad) * np.cos(theta)
-        Y = R * np.cos(mlat_rad) * np.sin(theta)
-        Z = R * np.sin(mlat_rad)
+        # X = R * np.cos(mlat_rad) * np.cos(theta)
+        # Y = R * np.cos(mlat_rad) * np.sin(theta)
+        # Z = R * np.sin(mlat_rad)
         
         fig = go.Figure()
         
