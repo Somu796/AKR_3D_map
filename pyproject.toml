@@ -5,6 +5,7 @@ description = "Add your description here"
 requires-python = ">=3.12"
 dependencies = [
     "astropy>=7.2.0",
+    "datetime>=6.0",
     "ipykernel>=7.1.0",
     "ipython>=9.9.0",
     "jupyter>=1.1.1",
@@ -14,8 +15,12 @@ dependencies = [
     "pandas>=2.3.3",
     "pip>=25.3",
     "plotly>=6.5.0",
+    "pydantic>=2.12.5",
+    "pymongo>=4.16.0",
     "pyvista>=0.46.4",
+    "pyyaml>=6.0.3",
     "requests>=2.32.5",
     "scipy>=1.16.3",
+    "tfcat>=1.0.3",
     "xarray>=2025.12.0",
 ]

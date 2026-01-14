@@ -13,3 +13,12 @@ Here we provide code to read in various AKR event lists, and map their occurrenc
 <img src="assets/PRESTO_logo.png" width="100">
 <img src="assets/Research_Ireland_RGB_logo_green.webp" width="200">
 </p>
+
+# Thinking process
+CSV File (Python conversion) ->  TFCat JSON (dates as ISO strings) -> (MongoDB insert with conversion) -> MongoDB BSON (dates as ISODate objects) (Application query) ->  Python datetime objects / JavaScript Date objects -> (Analysis/Display)
+
+# Good Practices will be followed all over
+It should be.
+1. OOP
+2. Type check
+3. Write pytests
