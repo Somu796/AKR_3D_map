@@ -6,6 +6,7 @@ documents/
 data/
 learning/
 notebooks/
+data_pipeline/
 
 # Specific files
 01_3Dvisualisation.ipynb
