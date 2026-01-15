@@ -1,6 +1,6 @@
 <h1 align="center"> 📡 🌍 AKR 3D Map 📻 🌐 </h1>
 
-**Work in Progress as of Dec 2025**
+# Work in Progress as of Dec 2025
 
 Here we provide code to read in various AKR event lists, and map their occurrence in the near-Earth space environment.
 

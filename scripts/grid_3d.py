@@ -168,6 +168,7 @@ class Cartesian:
 
     def plot_3d(
         self,
+        path: str = "3D_Objects/cartesian_grid.html",
         *,
         show_earth: bool = True,
         show_sun: bool = False,
@@ -176,6 +177,7 @@ class Cartesian:
         Plot the 3D Cartesian grid with wireframe.
 
         Args:
+            path: Path to save the HTML file
             show_earth: Whether to show Earth sphere
             show_sun: Whether to show Sun indicator
 
@@ -277,20 +279,20 @@ class Cartesian:
 
         # Layout
         fig.update_layout(
+            # Figure title
+            title={
+                "text": "3D Grid with Earth and Sun in Cartesian Coordinates"
+                if (show_sun and show_earth)
+                else "3D Grid of Earth in Cartesian Coordinates",
+                "font": {"size": 22},
+                "x": 0.5,
+                "xanchor": "center",
+            },
             # Global font
             font={
                 "family": "Times New Roman, Times, serif",
                 "size": 14,
                 "color": "#1a1a1a",
-            },
-            # Figure title
-            title={
-                "text": "3D Grid with Earth and Sun"
-                if (show_sun and show_earth)
-                else "3D Grid of Earth",
-                "font": {"size": 22},
-                "x": 0.5,
-                "xanchor": "center",
             },
             # 3D scene
             scene={
@@ -338,6 +340,7 @@ class Cartesian:
         )
 
         fig.show()
+        fig.write_html(path)
         self.fig = fig
         return self
 
@@ -366,7 +369,7 @@ class LTRMLat:
     """
 
     lt_range: tuple[NumericType, NumericType] = (0, 24)
-    r_range: tuple[NumericType, NumericType] = (0, 150)
+    r_range: tuple[NumericType, NumericType] = (0, 15)
     mlat_range: tuple[NumericType, NumericType] = (-90, 90)
     lt_bin: PositiveNumber = 1.0
     r_bin: PositiveNumber = 25.0
@@ -480,8 +483,20 @@ class LTRMLat:
         return self
 
     # Create figure lt/r/mlat
-    def plot_3d(self, *, show_earth: bool = True) -> "LTRMLat":
-        """Plot LT/R/MLat grid in 3D by converting to Cartesian."""
+    def plot_3d(
+        self,
+        path: str = "3D_Objects/LTRMLat_grid.html",
+        *,
+        show_earth: bool = True,
+    ) -> "LTRMLat":
+        """
+        Plot LT/R/MLat grid in 3D by converting to Cartesian.
+
+        Args:
+            path: Path to save the HTML file
+            show_earth: Whether to show Earth sphere
+
+        """
         if self.grid is None:
             raise ValueError("Grid not created. Call create_grid() first!")
 
@@ -572,25 +587,54 @@ class LTRMLat:
             )
 
         fig.update_layout(
-            title="LT/R/MLat Grid in 3D",
+            title={
+                "text": "3D Grid of Earth in LT/R/MLat Coordinates",
+                "font": {"size": 22},
+                "x": 0.5,
+                "xanchor": "center",
+            },
             font={
                 "family": "Times New Roman, Times, serif",
                 "size": 14,
                 "color": "#1a1a1a",
             },
             scene={
-                "xaxis_title": "X (R<sub>E</sub>)",
-                "yaxis_title": "Y (R<sub>E</sub>)",
-                "zaxis_title": "Z (R<sub>E</sub>)",
-                "aspectmode": "data",
+                "xaxis": {
+                    "title": {"text": "X (R<sub>E</sub>)", "font": {"size": 16}},
+                    "tickfont": {"size": 12},
+                    "gridcolor": "#cccccc",
+                    "showbackground": True,
+                    "backgroundcolor": "#f5f5f5",
+                },
+                "yaxis": {
+                    "title": {"text": "Y (R<sub>E</sub>)", "font": {"size": 16}},
+                    "tickfont": {"size": 12},
+                    "gridcolor": "#cccccc",
+                    "showbackground": True,
+                    "backgroundcolor": "#f5f5f5",
+                },
+                "zaxis": {
+                    "title": {"text": "Z (R<sub>E</sub>)", "font": {"size": 16}},
+                    "tickfont": {"size": 12},
+                    "gridcolor": "#cccccc",
+                    "showbackground": True,
+                    "backgroundcolor": "#f5f5f5",
+                },
                 "camera": {
                     "eye": {"x": 1.5, "y": 1.5, "z": 1.2},
                     "up": {"x": 0, "y": 0, "z": 1},
                 },
+                # Proper scaling
+                "aspectmode": "data",  # True scale based on data ranges
+                # Optional: Add this for better interaction
+                "dragmode": "orbit",
             },
+            # Size and background
             width=1000,
             height=800,
+            paper_bgcolor="white",
         )
         fig.show()
+        fig.write_html(path)
         self.fig = fig
         return self

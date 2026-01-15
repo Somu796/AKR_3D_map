@@ -1,6 +1,14 @@
-documents/
+# Ignore virtual environment
 .venv/
+
+# Folders
+documents/
 data/
+learning/
+notebooks/
+
+# Specific files
 01_3Dvisualisation.ipynb
 Folder_structure.md
-learning/
+01_3D_Visualisation.py
+10_all.py
