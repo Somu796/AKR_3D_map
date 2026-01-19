@@ -27,3 +27,13 @@ It should be.
 2. Type check
 3. Write pytests
 4. Try and Catch error handling.
+
+# Calculations
+
+## Residence time
+
+1. (Done) Clean data put as numeric or datetime in a list object, from "," separated text string
+2. (Done) Assign corresponding data types like datetime and float
+3. (Done) Explode the data to remove Nan entries, exploding data help with optimised computation (less RAM usage)
+4. Calculate Time Intervals: tn-1 - tn, where n = sttime_index+1
+5. Find corresponding coordinates

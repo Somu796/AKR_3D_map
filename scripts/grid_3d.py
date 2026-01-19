@@ -1,10 +1,12 @@
 # %%
 # Libraries
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Annotated
 
 import numpy as np
 import plotly.graph_objects as go  # type: ignore[import-untyped]
+import plotly.io as pio  # type: ignore[import-untyped]
 import xarray as xr
 from pydantic import Field, validate_call
 
@@ -49,6 +51,21 @@ def creates_bin1d(
     bin_edge = np.arange(start, end + bin_size, bin_size)
     bin_center = (bin_edge[:-1] + bin_edge[1:]) / 2
     return (bin_edge, bin_center)
+
+
+def save_plot(fig: go.Figure, path: str) -> None:
+    # Create the directory structure if it doesn't exist
+    Path(path).parent.mkdir(parents=True, exist_ok=True)
+
+    if path.endswith(".html"):
+        # Saves as an interactive standalone file
+        pio.write_html(fig, path)
+    elif path.endswith(".json"):
+        # Saves as a dynamic, modifiable data structure (Best for re-editing)
+        pio.write_json(fig, path)
+    else:
+        error_msg = f"Unsupported file extension in path: {path}. Use .html or .json"
+        raise ValueError(error_msg)
 
 
 # Create grid and visualisation
@@ -339,8 +356,10 @@ class Cartesian:
             margin={"l": 0, "r": 0, "t": 70, "b": 0},
         )
 
-        fig.show()
-        fig.write_html(path)
+        # fig.show()
+
+        # Saving the plot
+        save_plot(fig, path)
         self.fig = fig
         return self
 
@@ -634,7 +653,9 @@ class LTRMLat:
             height=800,
             paper_bgcolor="white",
         )
-        fig.show()
-        fig.write_html(path)
+        # fig.show()
+
+        # Saving the plot
+        save_plot(fig, path)
         self.fig = fig
         return self
