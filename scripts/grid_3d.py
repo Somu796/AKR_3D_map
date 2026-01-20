@@ -1,6 +1,7 @@
 # %%
 # Libraries
 from dataclasses import dataclass
+from typing import cast
 
 import numpy as np
 import pandas as pd
@@ -8,7 +9,14 @@ import plotly.graph_objects as go  # type: ignore[import-untyped]
 import xarray as xr
 
 from scripts.calculations import add_time_intervals
-from scripts.utils import NumericType, PositiveNumber, creates_bin1d, save_plot
+from scripts.types import NumericType, PositiveNumber
+from scripts.utils import (
+    add_celestial_bodies,
+    add_grid_wireframe,
+    creates_bin1d,
+    get_3d_layout_config,
+    save_plot,
+)
 
 # %%
 # Create grid and visualisation
@@ -250,11 +258,14 @@ class Cartesian:
 
         # 5. Update the internal xarray data directly
         # .values gives us the underlying NumPy array (no copy made)
-        res_array = self.grid.residence_time.values  # type: ignore[PD011]
+        res_array: np.ndarray = self.grid.residence_time.data
 
-        for idx, total_time in grouped.items():
-            i, j, k = idx  # type: ignore[misc]
+        for iteration, (idx, total_time) in enumerate(grouped.items()):
+            i, j, k = cast("tuple[int, int, int]", idx)  # type: ignore[misc]
+            # print(f"Updating bin ({i}, {j}, {k}) with time {total_time} seconds.")  # type: ignore[has-type]
             res_array[int(i), int(j), int(k)] += total_time  # type: ignore[has-type]
+            if iteration % 500 == 0:
+                print(f"Update in progress... processed {iteration} bins.")
 
         print(f"Grid populated: {np.count_nonzero(res_array)} bins updated.")
 
@@ -262,6 +273,7 @@ class Cartesian:
 
     def plot_3d(
         self,
+        variable: str | None = None,
         path: str = "3D_Objects/cartesian_grid.html",
         *,
         show_earth: bool = True,
@@ -271,6 +283,7 @@ class Cartesian:
         Plot the 3D Cartesian grid with wireframe.
 
         Args:
+            variable: Name of the variable to plot (e.g., 'residence_time')
             path: Path to save the HTML file
             show_earth: Whether to show Earth sphere
             show_sun: Whether to show Sun indicator
@@ -278,164 +291,65 @@ class Cartesian:
         """
         if self.grid is None:
             raise ValueError("Grid not created. Call create_grid() first!")
-        # Access Edges
-        x_edges = self.grid.x_edges.to_numpy()
-        z_edges = self.grid.z_edges.to_numpy()
-        y_edges = self.grid.y_edges.to_numpy()
 
         fig = go.Figure()
 
-        # Draw grid lines along X-axis
-        for y in y_edges:
-            for z in z_edges:
-                fig.add_trace(
-                    go.Scatter3d(
-                        x=x_edges,
-                        y=[y] * len(x_edges),
-                        z=[z] * len(x_edges),
-                        mode="lines",
-                        line={"color": "gray", "width": 1},
-                        opacity=0.3,
-                        showlegend=False,
-                        hoverinfo="skip",
-                    ),
-                )
-
-        # Draw grid lines along Y-axis
-        for x in x_edges:
-            for z in z_edges:
-                fig.add_trace(
-                    go.Scatter3d(
-                        x=[x] * len(y_edges),
-                        y=y_edges,
-                        z=[z] * len(y_edges),
-                        mode="lines",
-                        line={"color": "gray", "width": 1},
-                        opacity=0.3,
-                        showlegend=False,
-                        hoverinfo="skip",
-                    ),
-                )
-
-        # Draw grid lines along Z-axis
-        for x in x_edges:
-            for y in y_edges:
-                fig.add_trace(
-                    go.Scatter3d(
-                        x=[x] * len(z_edges),
-                        y=[y] * len(z_edges),
-                        z=z_edges,
-                        mode="lines",
-                        line={"color": "gray", "width": 1},
-                        opacity=0.3,
-                        showlegend=False,
-                        hoverinfo="skip",
-                    ),
-                )
-
-        # Creating sphere for earth and sun
-        u = np.linspace(0, 2 * np.pi, 50)
-        v = np.linspace(0, np.pi, 50)
-        x_sphere = np.outer(np.cos(u), np.sin(v))
-        y_sphere = np.outer(np.sin(u), np.sin(v))
-        z_sphere = np.outer(np.ones(np.size(u)), np.cos(v))
-
-        # Add Earth sphere at origin
-        if show_earth:
-            fig.add_trace(
-                go.Surface(
-                    x=x_sphere,
-                    y=y_sphere,
-                    z=z_sphere,
-                    colorscale="Blues",
-                    showscale=False,
-                    opacity=0.6,
-                    name="Earth",
-                ),
-            )
-
-        # Add Sun (positioned along positive X-axis, typical GSE orientation)
-        if show_sun:
-            sun_distance = -150  # GSE convention: +X points sunward, although the Sun itself lies at -X_GSE
-            sun_radius = 5  # Visual size
-
-            fig.add_trace(
-                go.Surface(
-                    x=x_sphere * sun_radius + sun_distance,
-                    y=y_sphere * sun_radius,
-                    z=z_sphere * sun_radius,
-                    colorscale=[[0, "yellow"], [1, "orange"]],
-                    showscale=False,
-                    opacity=0.8,
-                    name="Sun",
-                ),
-            )
-
-        # Layout
-        fig.update_layout(
-            # Figure title
-            title={
-                "text": "3D Grid with Earth and Sun in Cartesian Coordinates"
-                if (show_sun and show_earth)
-                else "3D Grid of Earth in Cartesian Coordinates",
-                "font": {"size": 22},
-                "x": 0.5,
-                "xanchor": "center",
-            },
-            # Global font
-            font={
-                "family": "Times New Roman, Times, serif",
-                "size": 14,
-                "color": "#1a1a1a",
-            },
-            # 3D scene
-            scene={
-                "xaxis": {
-                    "title": {"text": "X (R<sub>E</sub>)", "font": {"size": 16}},
-                    "tickfont": {"size": 12},
-                    "gridcolor": "#cccccc",
-                    "showbackground": True,
-                    "backgroundcolor": "#f5f5f5",
-                },
-                "yaxis": {
-                    "title": {"text": "Y (R<sub>E</sub>)", "font": {"size": 16}},
-                    "tickfont": {"size": 12},
-                    "gridcolor": "#cccccc",
-                    "showbackground": True,
-                    "backgroundcolor": "#f5f5f5",
-                },
-                "zaxis": {
-                    "title": {"text": "Z (R<sub>E</sub>)", "font": {"size": 16}},
-                    "tickfont": {"size": 12},
-                    "gridcolor": "#cccccc",
-                    "showbackground": True,
-                    "backgroundcolor": "#f5f5f5",
-                },
-                # Fixed camera (X horizontal, Z vertical)
-                "camera": {
-                    "eye": {
-                        "x": 0.3,
-                        "y": 2.5,
-                        "z": 0.8,
-                    },  # View from Y-axis, slightly elevated
-                    "center": {"x": 0, "y": 0, "z": 0},
-                    "up": {"x": 0, "y": 0, "z": 1},  # Z points UP
-                },
-                # Proper scaling
-                "aspectmode": "data",  # True scale based on data ranges
-                # Optional: Add this for better interaction
-                "dragmode": "orbit",
-            },
-            # Size and background
-            width=1000,
-            height=800,
-            paper_bgcolor="white",
-            margin={"l": 0, "r": 0, "t": 70, "b": 0},
+        # 1. Add Wireframe Grid
+        add_grid_wireframe(
+            fig,
+            self.grid.x_edges.to_numpy(),
+            self.grid.y_edges.to_numpy(),
+            self.grid.z_edges.to_numpy(),
         )
 
-        # fig.show()
+        # 2. Add Data Layer (Only if a variable is specified and exists)
+        if variable and variable in self.grid:
+            data_array = self.grid[variable].to_numpy()
+            ii, jj, kk = np.where(data_array > 0)
 
-        # Saving the plot
+            # Retrieve units from xarray attributes, default to empty string if not found
+            unit = self.grid[variable].attrs.get("units", "")
+            unit_str = f" ({unit})" if unit else ""
+
+            # Construct the clean name
+            clean_name = variable.replace("_", " ").title()
+            display_label = f"{clean_name}{unit_str}"
+
+            if len(ii) > 0:
+                fig.add_trace(
+                    go.Scatter3d(
+                        x=self.grid.x.to_numpy()[ii],
+                        y=self.grid.y.to_numpy()[jj],
+                        z=self.grid.z.to_numpy()[kk],
+                        mode="markers",
+                        marker={
+                            "size": 5,
+                            "color": data_array[ii, jj, kk],
+                            "colorscale": "Viridis",
+                            "colorbar": {
+                                "title": display_label,
+                                "thickness": 15,
+                            },
+                            "opacity": 0.8,
+                            "showscale": True,
+                        },
+                        name=clean_name if variable else "Data",
+                        showlegend=False,
+                        hovertemplate="Value: %{marker.color:.2f}<extra></extra>",
+                    ),
+                )
+
+        # 3. Add Celestial Bodies
+        add_celestial_bodies(fig, show_earth=show_earth, show_sun=show_sun)
+
+        # 4. Layout & Save
+        title = (
+            f"3D Grid: {variable.replace('_', ' ').title()}"
+            if variable
+            else "3D Grid Base"
+        )
+        fig.update_layout(**get_3d_layout_config(title))
+
         save_plot(fig, path)
         self.fig = fig
         return self

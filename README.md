@@ -73,3 +73,7 @@ Akr3Map_project/
 ├── main.py                     # Your primary execution script
 └── pyproject.toml              # (Optional) For project dependencies
 ```
+
+# To be done
+
+Colorscale, need to be better. Earth 3D image failed to add. Also better to add the orbit of the satellite. To see better. Camera angle should be better.
