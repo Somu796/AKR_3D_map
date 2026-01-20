@@ -37,3 +37,39 @@ It should be.
 3. (Done) Explode the data to remove Nan entries, exploding data help with optimised computation (less RAM usage)
 4. Calculate Time Intervals: tn-1 - tn, where n = sttime_index+1
 5. Find corresponding coordinates
+
+```py
+# Auto-determine boundaries from data
+cart = (Cartesian()
+        .decide_boundaries(df)      # Analyze data, set ranges
+        .create_grid()               # Create grid structure
+        .calculate_residence_time(df) # Calculate and store
+        .plot_3d(variable='residence_time'))  # Visualize
+
+# Or just plot grid structure
+cart = (Cartesian(x_range=(-15, 15), bin_size=2.0)
+        .create_grid()
+        .plot_3d())  # No variable → just wireframe
+
+# Or plot after manual calculation
+cart.plot_3d(variable='residence_time')  # Plot the data
+
+```
+
+# Folder Structure
+
+```md
+Akr3Map_project/
+├── .venv/                      # Virtual environment
+├── data/
+│   ├── raw/                    # Original fogg_akr_burst_list CSV
+│   └── processed/              # Cleaned Parquet files
+├── 3D_Objects/                 # Output folder for .html and .json plots
+├── scripts/
+│   ├── __init__.py             # Makes scripts a package
+│   ├── grid_3d.py              # Cartesian and LTRMLat classes
+│   ├── residence.py            # Residence time & interval calculations
+│   └── utils.py                # Binning, plotting, and type definitions
+├── main.py                     # Your primary execution script
+└── pyproject.toml              # (Optional) For project dependencies
+```

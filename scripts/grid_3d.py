@@ -1,73 +1,16 @@
 # %%
 # Libraries
 from dataclasses import dataclass
-from pathlib import Path
-from typing import Annotated
 
 import numpy as np
+import pandas as pd
 import plotly.graph_objects as go  # type: ignore[import-untyped]
-import plotly.io as pio  # type: ignore[import-untyped]
 import xarray as xr
-from pydantic import Field, validate_call
 
-# Customised type hint
-type NumericType = int | float
-PositiveNumber = Annotated[NumericType, Field(gt=0)]
+from scripts.calculations import add_time_intervals
+from scripts.utils import NumericType, PositiveNumber, creates_bin1d, save_plot
 
 # %%
-# Helper Function
-## Function to create 1D grid
-
-
-@validate_call
-def creates_bin1d(
-    start: NumericType,
-    end: NumericType,
-    bin_size: PositiveNumber = 2,
-) -> tuple[np.ndarray, np.ndarray]:
-    """
-    Create bin edges and centers for one dimension.
-
-    Args:
-        start: Starting value
-        end: Ending value
-        bin_size: Size of each bin (default: 2)
-
-    Returns:
-        Tuple of (edges, centers)
-
-    Example:
-        >>> edges, centers = creates_bin1d(0, 10, 2)
-        >>> edges
-        array([0, 2, 4, 6, 8, 10])
-        >>> centers
-        array([1., 3., 5., 7., 9.])
-
-    """
-    if end <= start:
-        error_message = f"end ({end}) must be greater than start ({start})"
-        raise ValueError(error_message)
-
-    bin_edge = np.arange(start, end + bin_size, bin_size)
-    bin_center = (bin_edge[:-1] + bin_edge[1:]) / 2
-    return (bin_edge, bin_center)
-
-
-def save_plot(fig: go.Figure, path: str) -> None:
-    # Create the directory structure if it doesn't exist
-    Path(path).parent.mkdir(parents=True, exist_ok=True)
-
-    if path.endswith(".html"):
-        # Saves as an interactive standalone file
-        pio.write_html(fig, path)
-    elif path.endswith(".json"):
-        # Saves as a dynamic, modifiable data structure (Best for re-editing)
-        pio.write_json(fig, path)
-    else:
-        error_msg = f"Unsupported file extension in path: {path}. Use .html or .json"
-        raise ValueError(error_msg)
-
-
 # Create grid and visualisation
 ## Cartesian
 
@@ -99,6 +42,62 @@ class Cartesian:
     z_range: tuple[NumericType, NumericType] = (-10, 10)
     bin_size: NumericType = 0.5
     grid: xr.Dataset | None = None
+
+    def decide_boundaries(
+        self,
+        df: pd.DataFrame,
+        padding: float = 0.01,  # Add 10% padding around data
+    ) -> "Cartesian":
+        """
+        Automatically determine grid boundaries from data.
+
+        Args:
+            df: DataFrame with x_gse, y_gse, z_gse columns
+            padding: Fraction to pad around data (default 0.1 = 10%)
+
+        Returns:
+            self (for method chaining)
+
+        Example:
+            >>> cart = Cartesian(bin_size=2.0).decide_boundaries(df)
+            >>> print(cart.x_range)
+            (-15.2, 15.8)  # Auto-determined from data
+
+        """
+        # Get min/max from data
+        x_min, x_max = df["x_gse"].min(), df["x_gse"].max()
+        y_min, y_max = df["y_gse"].min(), df["y_gse"].max()
+        z_min, z_max = df["z_gse"].min(), df["z_gse"].max()
+        print("Data extents:")
+        print(f"  X: {x_min:.2f} to {x_max:.2f} R_E")
+        print(f"  Y: {y_min:.2f} to {y_max:.2f} R_E")
+        print(f"  Z: {z_min:.2f} to {z_max:.2f} R_E")
+
+        # Add padding
+        x_range_width = x_max - x_min
+        y_range_width = y_max - y_min
+        z_range_width = z_max - z_min
+
+        # Modifies the object's default range
+        self.x_range = (
+            x_min - padding * x_range_width,
+            x_max + padding * x_range_width,
+        )
+        self.y_range = (
+            y_min - padding * y_range_width,
+            y_max + padding * y_range_width,
+        )
+        self.z_range = (
+            z_min - padding * z_range_width,
+            z_max + padding * z_range_width,
+        )
+
+        print("Auto-determined boundaries:")
+        print(f"  X: {self.x_range[0]:.2f} to {self.x_range[1]:.2f} R_E")
+        print(f"  Y: {self.y_range[0]:.2f} to {self.y_range[1]:.2f} R_E")
+        print(f"  Z: {self.z_range[0]:.2f} to {self.z_range[1]:.2f} R_E")
+
+        return self
 
     def create_grid(self) -> "Cartesian":
         """
@@ -183,6 +182,84 @@ class Cartesian:
 
         return self
 
+    def assign_bin_indices(
+        self,
+        df: pd.DataFrame,
+    ) -> pd.DataFrame:
+        """
+
+        Assign each position to a Cartesian grid bin.
+
+        Args:
+            df: DataFrame with x_gse, y_gse, z_gse columns
+            grid: Cartesian grid object
+
+        Returns:
+            df: DataFrame with new columns 'bin_x', 'bin_y', 'bin_z'
+
+        """
+        if self.grid is None:
+            raise ValueError(
+                "Grid not initialized. Run create_grid() before assigning bins.",
+            )
+
+        # Get bin edges
+        x_edges = self.grid.x_edges.to_numpy()
+        y_edges = self.grid.y_edges.to_numpy()
+        z_edges = self.grid.z_edges.to_numpy()
+
+        # Digitize
+        bin_x = np.digitize(df["x_gse"].to_numpy(), x_edges) - 1
+        bin_y = np.digitize(df["y_gse"].to_numpy(), y_edges) - 1
+        bin_z = np.digitize(df["z_gse"].to_numpy(), z_edges) - 1
+
+        # Mark out-of-bounds
+        bin_x = np.where((bin_x >= 0) & (bin_x < len(x_edges) - 1), bin_x, -1)
+        bin_y = np.where((bin_y >= 0) & (bin_y < len(y_edges) - 1), bin_y, -1)
+        bin_z = np.where((bin_z >= 0) & (bin_z < len(z_edges) - 1), bin_z, -1)
+
+        df["bin_x"] = bin_x
+        df["bin_y"] = bin_y
+        df["bin_z"] = bin_z
+
+        return df
+
+    def add_residence_time(self, df: pd.DataFrame) -> "Cartesian":
+        """
+        Main entry point to calculate intervals and populate the grid.
+
+        Args:
+            df: Data with bin indices.
+            residence_time_array: The actual 3D numpy array to modify.
+
+        """
+        if self.grid is None:
+            raise ValueError("Grid not created. Call create_grid() first!")
+
+        df = add_time_intervals(df)
+
+        # 2. Assign Bins (Internal method)
+        df = self.assign_bin_indices(df)
+
+        # 3. Filter only data within our grid boundaries
+        in_grid = (df["bin_x"] >= 0) & (df["bin_y"] >= 0) & (df["bin_z"] >= 0)
+        df_in_grid = df[in_grid]
+
+        # 4. Group by bin indices and sum the intervals
+        grouped = df_in_grid.groupby(["bin_x", "bin_y", "bin_z"])["time_interval"].sum()
+
+        # 5. Update the internal xarray data directly
+        # .values gives us the underlying NumPy array (no copy made)
+        res_array = self.grid.residence_time.values  # type: ignore[PD011]
+
+        for idx, total_time in grouped.items():
+            i, j, k = idx  # type: ignore[misc]
+            res_array[int(i), int(j), int(k)] += total_time  # type: ignore[has-type]
+
+        print(f"Grid populated: {np.count_nonzero(res_array)} bins updated.")
+
+        return self
+
     def plot_3d(
         self,
         path: str = "3D_Objects/cartesian_grid.html",
@@ -202,9 +279,9 @@ class Cartesian:
         if self.grid is None:
             raise ValueError("Grid not created. Call create_grid() first!")
         # Access Edges
-        x_edges = self.grid.x_edges.values
-        z_edges = self.grid.z_edges.values
-        y_edges = self.grid.y_edges.values
+        x_edges = self.grid.x_edges.to_numpy()
+        z_edges = self.grid.z_edges.to_numpy()
+        y_edges = self.grid.y_edges.to_numpy()
 
         fig = go.Figure()
 
@@ -520,7 +597,7 @@ class LTRMLat:
             raise ValueError("Grid not created. Call create_grid() first!")
 
         # Get coordinates
-        lt = self.grid.coords["local_time"].values
+        lt = self.grid.coords["local_time"].to_numpy()
         # r = self.grid.coords['radius'].values
         # mlat = self.grid.coords['mlat'].values
 
@@ -538,9 +615,9 @@ class LTRMLat:
         fig = go.Figure()
 
         # Draw grid lines along Local Time circles
-        for r_val in self.grid.coords["radius_edges"].values:
-            step = max(1, int(10 / self.mlat_bin))
-            for mlat_val in self.grid.coords["mlat_edges"].values[::step]:
+        for r_val in self.grid.coords["radius_edges"].to_numpy():
+            step = max(1, int(10 / self.mlat_bin))  # values
+            for mlat_val in self.grid.coords["mlat_edges"].to_numpy()[::step]:
                 theta_line = (12 - lt) * np.pi / 12
                 mlat_rad = np.radians(mlat_val)
 
@@ -562,12 +639,12 @@ class LTRMLat:
                 )
 
         # Draw grid lines along Radius
-        for lt_val in self.grid.coords["local_time_edges"].values[::3]:
-            for mlat_val in self.grid.coords["mlat_edges"].values[::5]:
+        for lt_val in self.grid.coords["local_time_edges"].to_numpy()[::3]:
+            for mlat_val in self.grid.coords["mlat_edges"].to_numpy()[::5]:
                 theta_val = (12 - lt_val) * np.pi / 12
                 mlat_rad = np.radians(mlat_val)
 
-                r_line = self.grid.coords["radius_edges"].values
+                r_line = self.grid.coords["radius_edges"].to_numpy()
                 x_line = r_line * np.cos(mlat_rad) * np.cos(theta_val)
                 y_line = r_line * np.cos(mlat_rad) * np.sin(theta_val)
                 z_line = r_line * np.sin(mlat_rad)
