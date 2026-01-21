@@ -55,7 +55,7 @@ wind_data_processed = exploding_saving_wind_data(wind_data)
 
 ### *Saving* as parquet or json
 ```{python}
-
+# | eval: false
 # 1. Processed data name
 processed_data_base_name = "01_processed_wind_data_fogg_akr_burst_list_1995_2004"
 
