@@ -1,5 +1,10 @@
 # Ignore virtual environment
 .venv/
+__pycache__/
+scripts/__pycache__/
+.ruff_cache/
+.mypy_cache/
+.jupyter_cache/
 
 # Folders
 documents/
@@ -13,3 +18,4 @@ data_pipeline/
 Folder_structure.md
 01_3D_Visualisation.py
 10_all.py
+/.quarto/

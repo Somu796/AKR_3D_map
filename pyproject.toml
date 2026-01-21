@@ -9,6 +9,7 @@ dependencies = [
     "ipykernel>=7.1.0",
     "ipython>=9.9.0",
     "jupyter>=1.1.1",
+    "jupyter-cache>=1.0.1",
     "matplotlib>=3.10.8",
     "netcdf4>=1.7.4",
     "numpy>=2.4.0",

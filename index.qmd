@@ -1,0 +1,142 @@
+---
+title: "AKR Map Visualisation from Wind Satellite Data"
+author:
+  - name: "Sudipta Kumar Hazra"
+    affiliations:
+      - name: "Dublin Institute for Advanced Studies (DIAS)"
+        department: "School of Astrophysics"
+  - name: "Alexandra Ruth Fogg"
+    affiliations:
+      - name: "Dublin Institute for Advanced Studies (DIAS)"
+        department: "School of Astrophysics"
+date: today
+date-format: "MMMM D, YYYY"
+---
+
+# AKR Map Visualisation from Wind Satellite Data
+
+## 1. Project Environment Setup
+```{python}
+# 1. Importing Libraries
+import sys
+from pathlib import Path
+
+# 2. Setting project paths
+project_root = Path.cwd()
+sys.path.append(str(project_root))
+
+# Define standard data subdirectories for easy access later
+RAW_DATA_DIR = project_root / "data" / "raw"
+PROCESSED_DATA_DIR = project_root / "data" / "processed"
+ASSETS_DIR = project_root / "assets" / "3D_Objects"
+
+```
+
+## 2. Data Ingestion & Pre-processing
+### *Reading* csv file and applying data type schema
+```{python}
+# 1. Importing functions from Package_Name
+from scripts.wind_data_reading import (
+    exploding_saving_wind_data,
+    load_apply_schema_wind_csv,
+)
+
+# 2. Loading and applying data type schema to wind data from CSV
+wind_data = load_apply_schema_wind_csv(
+    f"{RAW_DATA_DIR}/fogg_akr_burst_list_1995_2004.csv",
+)
+```
+
+### *Processing:* Exploding the data and filtering
+```{python}
+# 1. Exploding nested data and filtering NaNs
+wind_data_processed = exploding_saving_wind_data(wind_data)
+```
+
+### *Saving* as parquet or json
+```{python}
+
+# 1. Processed data name
+processed_data_base_name = "01_processed_wind_data_fogg_akr_burst_list_1995_2004"
+
+# 2. Saving in parquet format (memory efficient)
+wind_data_processed.to_parquet(
+    f"{PROCESSED_DATA_DIR}/{processed_data_base_name}.parquet",
+    engine="pyarrow",
+    index=False,
+)
+
+# 3. Saving in json format
+wind_data_processed.to_json(
+    f"{PROCESSED_DATA_DIR}/{processed_data_base_name}.json",
+    index=False,
+)
+
+print(f"Data successfully saved to: {PROCESSED_DATA_DIR}")
+```
+
+## 3. Importing Pre-processed Parquet Data for **Analysis**
+```{python}
+# 1. Importing libraries
+import pandas as pd
+
+# 2. Importing parquet file
+wind_data = pd.read_parquet(
+    f"{project_root}/data/processed/01_processed_wind_data_fogg_akr_burst_list_1995_2004.parquet",
+)
+
+# 3. Descriptory analysis
+print("__________ Data type of columns __________")
+print(wind_data.dtypes)
+print("\n")
+print("__________ Data summary __________")
+print((wind_data.groupby("original_burst_id").size().describe()))
+```
+
+## 4. Analysis & 3D Grid Generation
+
+### 1. Calculating residence time and preaping plot file 
+```{python}
+# 1. Importing Cartesian class from Package_Name
+from scripts.grid_3d import Cartesian
+
+# 2. Path to save the file
+plot_save_path = (
+    f"{ASSETS_DIR}/cartesian_grid_with_residence_time.json"
+)
+
+# 3. Performing analysis and generating plot
+cart = (
+    # Provide bin size for the 3D plot
+    Cartesian(bin_size=1.0)
+    # In case you are not sure about the extreme points
+    # .decide_boundaries(wind_data)
+    # Create grid points
+    .create_grid()
+    # Calculate residence time given wind satellite data
+    .add_residence_time(wind_data)
+    # Creating plot and saving as a json file (HPC save for big data)
+    .plot_3d(
+        variable="residence_time",
+        path=plot_save_path,
+        show_earth=True,
+        show_sun=False,
+    )
+)
+
+# 4. Validation: Total time should be > 0
+total_residence_time = cart.grid.residence_time.sum().item()
+print(f"Total residence time logged: {(total_residence_time):.1f} seconds")
+```
+
+## 5. Interactive Visualisation
+```{python}
+import plotly.io as pio
+
+# Reload and display the 3D Interactive Map
+if Path(plot_save_path).exists():
+    cartesian_fig = pio.read_json(str(plot_save_path))
+    cartesian_fig.show()
+else:
+    print(f"Error: Plot file not found at {plot_save_path}")
+```

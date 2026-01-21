@@ -76,4 +76,8 @@ Akr3Map_project/
 
 # To be done
 
-Colorscale, need to be better. Earth 3D image failed to add. Also better to add the orbit of the satellite. To see better. Camera angle should be better.
+1. Colorscale, need to be better.
+2. Earth 3D image failed to add.
+3. Also better to add the orbit of the satellite. To see better.
+4. Camera angle should be better.
+5. Add data layer as function so can be performed for many variables then name, and color need to be checked.

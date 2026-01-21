@@ -1,0 +1,44 @@
+project:
+  type: website
+  output-dir: docs
+  render:
+  - "*.qmd"
+  - "!.md"
+
+website:
+  title: "AKR 3D Map Documentation"
+  navbar:
+    left:
+      - text: "Home"
+        href: index.qmd
+
+date-format: "MMMM D, YYYY"
+
+format:
+  html:
+    page-layout: full
+    code-fold: false
+    code-tools: true
+    code-copy: true
+    toc: true
+    toc-depth: 3
+    toc-location: left
+    toc-title: "Contents"
+    theme: 
+      light: cosmo
+      dark: darkly
+    # css: styles.css
+    smooth-scroll: true
+    anchor-sections: true
+    link-external-newwindow: true
+    embed-resources: false
+    self-contained: false
+
+execute:
+  cache: true
+  warning: false
+  message: false
+  error: false
+  freeze: auto
+
+jupyter: python3

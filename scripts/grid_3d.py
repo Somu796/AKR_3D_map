@@ -339,15 +339,16 @@ class Cartesian:
                     ),
                 )
 
+            # Set title
+            title = f"3D Grid: {variable.replace('_', ' ').title()}"
+        else:
+            title = "3D Grid Base"
+
         # 3. Add Celestial Bodies
         add_celestial_bodies(fig, show_earth=show_earth, show_sun=show_sun)
 
         # 4. Layout & Save
-        title = (
-            f"3D Grid: {variable.replace('_', ' ').title()}"
-            if variable
-            else "3D Grid Base"
-        )
+
         fig.update_layout(**get_3d_layout_config(title))
 
         save_plot(fig, path)
