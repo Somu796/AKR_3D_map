@@ -12,6 +12,7 @@ data/
 learning/
 notebooks/
 data_pipeline/
+_freeze/
 
 # Specific files
 01_3Dvisualisation.ipynb
