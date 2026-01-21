@@ -8,7 +8,9 @@ scripts/__pycache__/
 
 # Folders
 documents/
-data/
+# data/
+data/raw/fogg_akr_burst_list_1995_2004.csv
+data/processed/01_processed_wind_data_fogg_akr_burst_list_1995_2004.json
 learning/
 notebooks/
 data_pipeline/

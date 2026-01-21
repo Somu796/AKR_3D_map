@@ -33,6 +33,7 @@ ASSETS_DIR = project_root / "assets" / "3D_Objects"
 ## 2. Data Ingestion & Pre-processing
 ### *Reading* csv file and applying data type schema
 ```{python}
+# | eval: false
 # 1. Importing functions from Package_Name
 from scripts.wind_data_reading import (
     exploding_saving_wind_data,
@@ -47,6 +48,7 @@ wind_data = load_apply_schema_wind_csv(
 
 ### *Processing:* Exploding the data and filtering
 ```{python}
+# | eval: false
 # 1. Exploding nested data and filtering NaNs
 wind_data_processed = exploding_saving_wind_data(wind_data)
 ```
