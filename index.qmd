@@ -13,8 +13,6 @@ date: today
 date-format: "MMMM D, YYYY"
 ---
 
-# AKR Map Visualisation from Wind Satellite Data
-
 ## 1. Project Environment Setup
 ```{python}
 # 1. Importing Libraries
