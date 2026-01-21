@@ -11,9 +11,11 @@ author:
         department: "School of Astrophysics"
 date: today
 date-format: "MMMM D, YYYY"
+number-sections: true
+number-depth: 3
 ---
 
-## 1. Project Environment Setup
+## Project Environment Setup
 ```{python}
 # 1. Importing Libraries
 import sys
@@ -30,7 +32,7 @@ ASSETS_DIR = project_root / "assets" / "3D_Objects"
 
 ```
 
-## 2. Data Ingestion & Pre-processing
+## Data Ingestion & Pre-processing
 ### *Reading* csv file and applying data type schema
 ```{python}
 # | eval: false
@@ -75,7 +77,7 @@ wind_data_processed.to_json(
 print(f"Data successfully saved to: {PROCESSED_DATA_DIR}")
 ```
 
-## 3. Importing Pre-processed Parquet Data for **Analysis**
+## Importing Pre-processed Parquet Data for **Analysis**
 ```{python}
 # 1. Importing libraries
 import pandas as pd
@@ -93,9 +95,9 @@ print("__________ Data summary __________")
 print((wind_data.groupby("original_burst_id").size().describe()))
 ```
 
-## 4. Analysis & 3D Grid Generation
+## Analysis & 3D Grid Generation
 
-### 1. Calculating residence time and preaping plot file 
+### Calculating residence time and preaping plot file 
 ```{python}
 # 1. Importing Cartesian class from Package_Name
 from scripts.grid_3d import Cartesian
@@ -129,7 +131,7 @@ total_residence_time = cart.grid.residence_time.sum().item()
 print(f"Total residence time logged: {(total_residence_time):.1f} seconds")
 ```
 
-## 5. Interactive Visualisation
+## Interactive Visualisation
 ```{python}
 import plotly.io as pio
 
