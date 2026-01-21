@@ -30,16 +30,33 @@ jobs:
       - name: Install uv
         uses: astral-sh/setup-uv@v4
         with:
-          enable-cache: true
+          enable-cache: true  # Caches Python packages
 
       - name: Set up Python
         run: uv python install 3.12
 
-      - name: Install dependencies
-        run: uv sync
+      - name: Cache Quarto
+        uses: actions/cache@v4
+        with:
+          path: ~/.quarto
+          key: quarto-${{ runner.os }}
 
       - name: Set up Quarto
         uses: quarto-dev/quarto-actions/setup@v2
+
+      - name: Cache Quarto render
+        uses: actions/cache@v4
+        with:
+          path: |
+            _cache
+            _freeze
+            .quarto
+          key: quarto-render-${{ hashFiles('**/*.qmd') }}
+          restore-keys: |
+            quarto-render-
+
+      - name: Install dependencies
+        run: uv sync
 
       - name: Render Quarto site
         run: uv run quarto render
