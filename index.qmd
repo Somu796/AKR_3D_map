@@ -89,10 +89,10 @@ wind_data = pd.read_parquet(
 
 # 3. Descriptory analysis
 print("__________ Data type of columns __________")
-print(wind_data.dtypes)
+display(wind_data.describe().T)
 print("\n")
 print("__________ Data summary __________")
-print((wind_data.groupby("original_burst_id").size().describe()))
+display(wind_data.groupby("original_burst_id").size().describe().to_frame().T)
 ```
 
 ## Analysis & 3D Grid Generation
