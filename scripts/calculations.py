@@ -3,7 +3,7 @@ import pandas as pd
 # from scripts.grid_3d import Cartesian, LTRMLat
 
 
-# %% Residence time calculations
+# %% observation_time calculations
 def add_time_intervals(df: pd.DataFrame) -> pd.DataFrame:
     """
     Add a column 'time_interval' showing how long spacecraft was at each position.

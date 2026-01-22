@@ -144,9 +144,7 @@ display(wind_data.groupby("original_burst_id").size().describe().to_frame().T)
 from scripts.grid_3d import Cartesian
 
 # 2. Path to save the file
-plot_save_path = (
-    f"{ASSETS_DIR}/cartesian_grid_with_residence_time.json"
-)
+plot_save_path = f"{ASSETS_DIR}/cartesian_grid_with_observation_time.json"
 
 # 3. Performing analysis and generating plot
 cart = (
@@ -156,11 +154,11 @@ cart = (
     # .decide_boundaries(wind_data)
     # Create grid points
     .create_grid()
-    # Calculate residence time given wind satellite data
-    .add_residence_time(wind_data)
+    # Calculate observations time given wind satellite data
+    .add_observation_time(wind_data)
     # Creating plot and saving as a json file (HPC save for big data)
     .plot_3d(
-        variable="residence_time",
+        variable="observation_time",
         path=plot_save_path,
         show_earth=True,
         show_sun=False,
@@ -168,8 +166,8 @@ cart = (
 )
 
 # 4. Validation: Total time should be > 0
-total_residence_time = cart.grid.residence_time.sum().item()
-print(f"Total residence time logged: {(total_residence_time):.1f} seconds")
+total_observation_time = cart.grid.observation_time.sum().item()
+print(f"Total observations time logged: {(total_observation_time):.1f} seconds")
 ```
 
 ## Interactive Visualisation

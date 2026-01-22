@@ -40,7 +40,7 @@ class Cartesian:
         >>> cart = Cartesian(bin_size=2.0)
         >>> cart.create_grid()
         >>> my_grid = cart.grid # Accessing the dataset
-        >>> cart.add_data(residence_time, burst_count)
+        >>> cart.add_data(observation_time, burst_count)
         >>> cart.plot_3d()
 
     """
@@ -113,7 +113,7 @@ class Cartesian:
 
         Returns:
             xarray Dataset with coordinates (x, y, z) containing
-            placeholder data variables for residence_time, burst_count, burst_time,
+            placeholder data variables for observation_time, burst_count, burst_time,
             and probability.
 
         """
@@ -141,7 +141,7 @@ class Cartesian:
 
         # Initialize arrays with proper dtype (?Check Data Type later)
         shape: tuple[int, int, int] = (x_n, y_n, z_n)
-        residence_time: np.ndarray = np.zeros(shape, dtype=np.float64)
+        observation_time: np.ndarray = np.zeros(shape, dtype=np.float64)
         burst_count: np.ndarray = np.zeros(shape, dtype=np.int32)
         burst_time: np.ndarray = np.zeros(shape, dtype=np.float64)
         probability: np.ndarray = np.zeros(shape, dtype=np.float64)
@@ -149,9 +149,9 @@ class Cartesian:
         # Create grid xr.Dataset(parameter={key:([],var,{'var_metadata':'})})
         self.grid = xr.Dataset(
             data_vars={
-                "residence_time": (
+                "observation_time": (
                     ["x", "y", "z"],
-                    residence_time,
+                    observation_time,
                     {"units": "seconds", "dtype": "float64"},
                 ),
                 "burst_count": (
@@ -232,13 +232,13 @@ class Cartesian:
 
         return df
 
-    def add_residence_time(self, df: pd.DataFrame) -> "Cartesian":
+    def add_observation_time(self, df: pd.DataFrame) -> "Cartesian":
         """
         Main entry point to calculate intervals and populate the grid.
 
         Args:
             df: Data with bin indices.
-            residence_time_array: The actual 3D numpy array to modify.
+            observation_time_array: The actual 3D numpy array to modify.
 
         """
         if self.grid is None:
@@ -258,7 +258,7 @@ class Cartesian:
 
         # 5. Update the internal xarray data directly
         # .values gives us the underlying NumPy array (no copy made)
-        res_array: np.ndarray = self.grid.residence_time.data
+        res_array: np.ndarray = self.grid.observation_time.data
 
         for iteration, (idx, total_time) in enumerate(grouped.items()):
             i, j, k = cast("tuple[int, int, int]", idx)  # type: ignore[misc]
@@ -283,7 +283,7 @@ class Cartesian:
         Plot the 3D Cartesian grid with wireframe.
 
         Args:
-            variable: Name of the variable to plot (e.g., 'residence_time')
+            variable: Name of the variable to plot (e.g., 'observation_time')
             path: Path to save the HTML file
             show_earth: Whether to show Earth sphere
             show_sun: Whether to show Sun indicator
