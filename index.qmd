@@ -13,7 +13,48 @@ date: today
 date-format: "MMMM D, YYYY"
 number-sections: true
 number-depth: 3
+bibliography: references.bib
 ---
+## Nitty-gritties
+This study utilises archived observations of Auroral Kilometric Radiation (AKR) bursts, individually selected from the **Wind/WAVES** (1995–2004). The raw data were previously processed by @Fogg2022 to isolate distinct AKR emission clusters [(link to archive)](https://maser-lira.obspm.fr/publications/doi/bursts-of-auroral-kilometric-148.html).
+
+The dataset consists of discrete AKR burst events. The following parameters are defined for each burst event:
+
+- Temporal details: 
+    - STIME : burst start in universal time (YYYY-MM-DDTHH:MM:SS.SSSSSSSSS)
+    - ETIME : burst end in universal time (DD/MM/YYYY HH:MM:SS.SSSSSSSSS)
+    - BURST_TIMESTAMP: list of universal times defining burst window, format YYYY-MM-DDTHH:MM:SS.SSSSSSSSS
+
+- Spectral features:
+    - MIN_F_BOUND: list of the lower frequency bound 
+    - MAX_F_BOUND: list of the upper frequency bound 
+
+- Coordiantes (at each BURST_TIMESTAMP):
+
+    - Spehircal/local:
+        - LT_GSE: list of spacecraft local times (hours)  
+        - RADIUS: list of spacecraft radial distances (Earth radius)  
+        - LAT_GSE: list of spacecraft latitude (degrees, in GSE coordinates)  
+
+    - Cartesian (GSE): 
+        - X_GSE: list of spacecraft position in X (Earth radii, in GSE coordinates)  
+        - Y_GSE: list of spacecraft position in Y (Earth radii, GSE coordinates)  
+    - Z_GSE: list of spacecraft position in Z (Earth radii, GSE coordinates)  
+
+. Empty values are represented as “nan” or “NaT” depending to numeric (integer or float) or, datetime, respectively.  
+. Frequency data and Coordinates as a function of BURST_TIMESTAMP.
+
+## Objective:
+The goal is to quantify AKR activity by mapping discrete satellite data into a 3D grid, focusing on four key variables:
+
+(a) Observation Time: The cumulative duration spent actually detecting AKR in each bin (the sum of the burst windows),
+
+(b) Normalised Observation Time: The ratio of observation time to residence time. This removes orbital bias to provide the true probability of AKR occurrence per location.
+
+(c) Residence Time: The total time the Wind spacecraft spent in each bin. This measures the cumulative "exposure" time per location.
+
+(d) Number of Bursts: The count of unique burst events in each bin, determined by the number of recorded burst start times (STIME).
+
 
 ## Project Environment Setup
 ```{python}

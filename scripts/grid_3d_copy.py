@@ -16,7 +16,9 @@ from scripts.utils import (
     get_3d_layout_config,
     save_plot,
 )
-from scripts.variables import NumericType, PositiveNumber
+
+# from scripts.base_class import AKRGrid
+from scripts.variables import NumericType, PositiveNumber, n_coord_colnames
 
 # %%
 # Create grid and visualisation
@@ -51,61 +53,9 @@ class Cartesian:
     bin_size: NumericType = 0.5
     grid: xr.Dataset | None = None
 
-    def decide_boundaries(
-        self,
-        df: pd.DataFrame,
-        padding: float = 0.01,  # Add 10% padding around data
-    ) -> "Cartesian":
-        """
-        Automatically determine grid boundaries from data.
-
-        Args:
-            df: DataFrame with x_gse, y_gse, z_gse columns
-            padding: Fraction to pad around data (default 0.1 = 10%)
-
-        Returns:
-            self (for method chaining)
-
-        Example:
-            >>> cart = Cartesian(bin_size=2.0).decide_boundaries(df)
-            >>> print(cart.x_range)
-            (-15.2, 15.8)  # Auto-determined from data
-
-        """
-        # Get min/max from data
-        x_min, x_max = df["x_gse"].min(), df["x_gse"].max()
-        y_min, y_max = df["y_gse"].min(), df["y_gse"].max()
-        z_min, z_max = df["z_gse"].min(), df["z_gse"].max()
-        print("Data extents:")
-        print(f"  X: {x_min:.2f} to {x_max:.2f} R_E")
-        print(f"  Y: {y_min:.2f} to {y_max:.2f} R_E")
-        print(f"  Z: {z_min:.2f} to {z_max:.2f} R_E")
-
-        # Add padding
-        x_range_width = x_max - x_min
-        y_range_width = y_max - y_min
-        z_range_width = z_max - z_min
-
-        # Modifies the object's default range
-        self.x_range = (
-            x_min - padding * x_range_width,
-            x_max + padding * x_range_width,
-        )
-        self.y_range = (
-            y_min - padding * y_range_width,
-            y_max + padding * y_range_width,
-        )
-        self.z_range = (
-            z_min - padding * z_range_width,
-            z_max + padding * z_range_width,
-        )
-
-        print("Auto-determined boundaries:")
-        print(f"  X: {self.x_range[0]:.2f} to {self.x_range[1]:.2f} R_E")
-        print(f"  Y: {self.y_range[0]:.2f} to {self.y_range[1]:.2f} R_E")
-        print(f"  Z: {self.z_range[0]:.2f} to {self.z_range[1]:.2f} R_E")
-
-        return self
+    def _get_attribute_names_for_ranges(self) -> list[str]:
+        # This connects the loop index 0 to 'x_range', 1 to 'y_range', etc.
+        return ["x_range", "y_range", "z_range"]
 
     def create_grid(self) -> "Cartesian":
         """

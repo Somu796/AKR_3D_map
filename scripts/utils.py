@@ -11,7 +11,7 @@ import plotly.io as pio  # type: ignore[import-untyped]
 from PIL import Image
 from pydantic import validate_call
 
-from scripts.types import NumericType, PositiveNumber
+from scripts.variables import NumericType, PositiveNumber
 
 
 # %% 1D bin creation function
