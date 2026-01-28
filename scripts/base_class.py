@@ -1,18 +1,19 @@
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
-from typing import ClassVar
+from typing import Any, ClassVar
 
-import plotly.graph_objects as go  # type: ignore[import-untyped]
 import numpy as np
 import pandas as pd
+import plotly.graph_objects as go  # type: ignore[import-untyped]
 import xarray as xr
 
 from scripts.mixins.observation_time import ObservationTimeCalculator
 from scripts.utils import (
-    creates_bin1d, 
-    add_celestial_bodies, 
-    get_3d_layout_config, 
-    save_plot)
+    add_celestial_bodies,
+    creates_bin1d,
+    get_3d_layout_config,
+    save_plot,
+)
 from scripts.variables import (
     NumericType,
     PositiveNumber,
@@ -29,6 +30,7 @@ class AKRGrid(ABC, ObservationTimeCalculator):
     coord_colnames: tuple[str, str, str] | None = field(init=False, default=None)
     grid: xr.Dataset | None = None
     N_DIMENSIONS: ClassVar[int] = n_coord_colnames
+    plot_in_cartesian: ClassVar[bool]
 
     # _____________________ ABSTRACT METHODS (TO CALL CHILD ATTRIBUTES) _____________________
     # Private methods to map coord_1/2/3 to x/y/z
@@ -79,19 +81,20 @@ class AKRGrid(ABC, ObservationTimeCalculator):
     def _transform_to_cartesian(
         self,
         coord_1_val: float,
-        coord_2_val: float, 
+        coord_2_val: float,
         coord_3_val: float,
     ) -> tuple[float, float, float]:
         """
         Transform coordinate system values to Cartesian (X, Y, Z).
-        
+
         Args:
             coord_1_val: First coordinate value
             coord_2_val: Second coordinate value
             coord_3_val: Third coordinate value
-        
+
         Returns:
             (x, y, z) in Cartesian coordinates
+
         """
 
     # _____________________ATTRIBUTE MAPPING_____________________
@@ -393,40 +396,44 @@ class AKRGrid(ABC, ObservationTimeCalculator):
 
     # Private method to plot the grid in Cartesian coordinates
     def _add_wireframe(self, fig: go.Figure, grid: xr.Dataset) -> None:
-        """Add wireframe grid lines to 3D plot (works for any coordinate system)."""
-        # Get grid and dimension info
+        """Add wireframe grid lines to 3D plot."""
         dim_names = self.get_dimension_names()
-        bin_attrs = self._get_bin_attrs()
-        
-        # Get edges for all dimensions
-        edges = [
-            grid.coords[f"{dim_name}_edges"].to_numpy()
-            for dim_name in dim_names
-        ]
-        
-        # Determine step sizes for sampling (to avoid too many lines)
+
+        # Get edges
+        edges = [grid.coords[f"{dim_name}_edges"].to_numpy() for dim_name in dim_names]
+
+        # Determine steps
         steps = []
-        for i, bin_attr in enumerate(bin_attrs):
-            # bin_size = getattr(self, bin_attr)
-            
+        for i in range(len(edges)):
             num_edges = len(edges[i])
-            step = max(1, num_edges // 15)  # Aiming for around 15 lines per dimension
+            step = max(1, num_edges // 15)
             steps.append(step)
-        
-        # Draw grid lines for each pair of constant coordinates
-        # Lines along dimension 0 (vary dim 0, fix dim 1 & 2)
-        for val_1 in edges[1][::steps[1]]:
-            for val_2 in edges[2][::steps[2]]:
+
+        # Helper function for coordinate transformation
+        def get_plot_coords(
+            val_0: float,
+            val_1: float,
+            val_2: float,
+        ) -> tuple[float, float, float]:
+            if self.plot_in_cartesian:
+                return self._transform_to_cartesian(val_0, val_1, val_2)
+            return (val_0, val_1, val_2)  # Use native coordinates
+
+        # Lines along dimension 0
+        for val_1 in edges[1][:: steps[1]]:
+            for val_2 in edges[2][:: steps[2]]:
                 x_line, y_line, z_line = [], [], []
                 for val_0 in edges[0]:
-                    x, y, z = self._transform_to_cartesian(val_0, val_1, val_2)
+                    x, y, z = get_plot_coords(val_0, val_1, val_2)
                     x_line.append(x)
                     y_line.append(y)
                     z_line.append(z)
-                
+
                 fig.add_trace(
                     go.Scatter3d(
-                        x=x_line, y=y_line, z=z_line,
+                        x=x_line,
+                        y=y_line,
+                        z=z_line,
                         mode="lines",
                         line={"color": "gray", "width": 1},
                         opacity=0.3,
@@ -434,20 +441,22 @@ class AKRGrid(ABC, ObservationTimeCalculator):
                         hoverinfo="skip",
                     ),
                 )
-        
-        # Lines along dimension 1 (vary dim 1, fix dim 0 & 2)
-        for val_0 in edges[0][::steps[0]]:
-            for val_2 in edges[2][::steps[2]]:
+
+        # Lines along dimension 1
+        for val_0 in edges[0][:: steps[0]]:
+            for val_2 in edges[2][:: steps[2]]:
                 x_line, y_line, z_line = [], [], []
                 for val_1 in edges[1]:
-                    x, y, z = self._transform_to_cartesian(val_0, val_1, val_2)
+                    x, y, z = get_plot_coords(val_0, val_1, val_2)
                     x_line.append(x)
                     y_line.append(y)
                     z_line.append(z)
-                
+
                 fig.add_trace(
                     go.Scatter3d(
-                        x=x_line, y=y_line, z=z_line,
+                        x=x_line,
+                        y=y_line,
+                        z=z_line,
                         mode="lines",
                         line={"color": "gray", "width": 1},
                         opacity=0.3,
@@ -455,20 +464,22 @@ class AKRGrid(ABC, ObservationTimeCalculator):
                         hoverinfo="skip",
                     ),
                 )
-        
-        # Lines along dimension 2 (vary dim 2, fix dim 0 & 1)
-        for val_0 in edges[0][::steps[0]]:
-            for val_1 in edges[1][::steps[1]]:
+
+        # Lines along dimension 2
+        for val_0 in edges[0][:: steps[0]]:
+            for val_1 in edges[1][:: steps[1]]:
                 x_line, y_line, z_line = [], [], []
                 for val_2 in edges[2]:
-                    x, y, z = self._transform_to_cartesian(val_0, val_1, val_2)
+                    x, y, z = get_plot_coords(val_0, val_1, val_2)
                     x_line.append(x)
                     y_line.append(y)
                     z_line.append(z)
-                
+
                 fig.add_trace(
                     go.Scatter3d(
-                        x=x_line, y=y_line, z=z_line,
+                        x=x_line,
+                        y=y_line,
+                        z=z_line,
                         mode="lines",
                         line={"color": "gray", "width": 1},
                         opacity=0.3,
@@ -476,6 +487,17 @@ class AKRGrid(ABC, ObservationTimeCalculator):
                         hoverinfo="skip",
                     ),
                 )
+
+    def _get_axis_labels(self) -> dict[str, str]:
+        """Get axis labels for plotting."""
+        dim_names = self.get_dimension_names()
+        units = self.get_coord_units()
+
+        return {
+            "x": f"{dim_names[0]} ({units[0]})",
+            "y": f"{dim_names[1]} ({units[1]})",
+            "z": f"{dim_names[2]} ({units[2]})",
+        }
 
     def plot_3d(
         self,
@@ -484,24 +506,20 @@ class AKRGrid(ABC, ObservationTimeCalculator):
         *,
         show_earth: bool = True,
         show_sun: bool = False,
-        ) -> "AKRGrid":
+    ) -> "AKRGrid":
         """Plot 3D grid with wireframe (works for ALL coordinate systems)."""
         # 1. Validate grid
         grid = self._validate_and_get_grid()
+        dim_names = self.get_dimension_names()  # Retrieve dimension names
 
-        # 2. Initialize figure
+        # 2. Initialise figure
         fig = go.Figure()
-        
+
         # 3. Add wireframe: reads from grid, writes to fig
         self._add_wireframe(fig, grid)
-        
-        
+
         # 4. Add Data Layer (Only if a variable is specified and exists)
         if variable and variable in grid:
-
-            # Retrieve dimension names 
-            dim_names = self.get_dimension_names()
-
             data_array = grid[variable].to_numpy()
             ii, jj, kk = np.where(data_array > 0)
 
@@ -514,11 +532,33 @@ class AKRGrid(ABC, ObservationTimeCalculator):
             display_label = f"{clean_name}{unit_str}"
 
             if len(ii) > 0:
+                # Get coordinates - native or transformed
+                if self.plot_in_cartesian:
+                    # Transform each point
+                    plot_x, plot_y, plot_z = [], [], []
+                    for i, j, k in zip(ii, jj, kk, strict=True):
+                        coord_0: Any = float(grid[dim_names[0]].to_numpy()[i])
+                        coord_1: Any = float(grid[dim_names[1]].to_numpy()[j])
+                        coord_2: Any = float(grid[dim_names[2]].to_numpy()[k])
+                        x, y, z = self._transform_to_cartesian(
+                            coord_0,
+                            coord_1,
+                            coord_2,
+                        )
+                        plot_x.append(x)
+                        plot_y.append(y)
+                        plot_z.append(z)
+                else:
+                    # Use native coordinates
+                    plot_x = grid[dim_names[0]].to_numpy()[ii].tolist()
+                    plot_y = grid[dim_names[1]].to_numpy()[jj].tolist()
+                    plot_z = grid[dim_names[2]].to_numpy()[kk].tolist()
+
                 fig.add_trace(
                     go.Scatter3d(
-                        x=grid[dim_names[0]].to_numpy()[ii],
-                        y=grid[dim_names[1]].to_numpy()[jj],
-                        z=grid[dim_names[2]].to_numpy()[kk],
+                        x=plot_x,
+                        y=plot_y,
+                        z=plot_z,
                         mode="markers",
                         marker={
                             "size": 5,
@@ -542,16 +582,16 @@ class AKRGrid(ABC, ObservationTimeCalculator):
         else:
             title = "3D Grid Base"
 
-        
         # 5. Add celestial bodies
-        add_celestial_bodies(fig, show_earth=show_earth, show_sun=show_sun)
+        if self.plot_in_cartesian:
+            add_celestial_bodies(fig, show_earth=show_earth, show_sun=show_sun)
 
         # 6. Layout
-        fig.update_layout(**get_3d_layout_config(title))
-        
+        axis_labels = self._get_axis_labels()
+        fig.update_layout(**get_3d_layout_config(title, axis_labels=axis_labels))
+
         # 7. Save plot
         save_plot(fig, path)
 
         self.fig = fig
         return self
-    

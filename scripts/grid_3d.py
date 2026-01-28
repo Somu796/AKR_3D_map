@@ -1,12 +1,13 @@
 # %%
 # Libraries
 from dataclasses import dataclass
+from typing import ClassVar
 
 import numpy as np
-import plotly.graph_objects as go  # type: ignore[import-untyped]
-# import xarray as xr
 
+# import xarray as xr
 from scripts.base_class import AKRGrid
+
 # from scripts.utils import (
 #     add_celestial_bodies,
 #     add_grid_wireframe,
@@ -14,7 +15,6 @@ from scripts.base_class import AKRGrid
 #     get_3d_layout_LTRMlat_config,
 #     save_plot,
 # )
-
 # from scripts.base_class import AKRGrid
 from scripts.variables import NumericType, PositiveNumber
 
@@ -52,6 +52,7 @@ class Cartesian(AKRGrid):
     x_bin_size: PositiveNumber = 0.5
     y_bin_size: PositiveNumber = 0.5
     z_bin_size: PositiveNumber = 0.5
+    plot_in_cartesian: ClassVar[bool] = True
     # grid: xr.Dataset | None = None
 
     # _____________________Methods: Mapping to Parent Class_____________________
@@ -80,6 +81,7 @@ class Cartesian(AKRGrid):
             "z_bin_size": float(self.z_bin_size),
             "description": "AKR detection grid",
         }
+
     # For plotting purposes, no transformation needed for Cartesian
     def _transform_to_cartesian(
         self,
@@ -90,8 +92,8 @@ class Cartesian(AKRGrid):
         """No transformation needed - already Cartesian."""
         return (x_val, y_val, z_val)
 
-    
     # _____________________Cartesian specific Methods_____________________
+
 
 # %% lt/r/mlat
 @dataclass
@@ -122,6 +124,7 @@ class LTRMLat(AKRGrid):
     lt_bin_size: PositiveNumber = 1.0
     r_bin_size: PositiveNumber = 25.0
     mlat_bin_size: PositiveNumber = 5.0
+    plot_in_cartesian: ClassVar[bool] = True
     # grid: xr.Dataset | None = None
 
     # _____________________Methods: Mapping to Parent Class_____________________
@@ -133,6 +136,7 @@ class LTRMLat(AKRGrid):
     def _get_bin_attrs(self) -> tuple[str, str, str]:
         """Map coord_1/2/3_bin to bin_size (uniform bins)."""
         return ("lt_bin_size", "r_bin_size", "mlat_bin_size")
+
     # Public methods to get dimension names, units, and attributes
     def get_dimension_names(self) -> tuple[str, str, str]:
         return ("lt", "r", "mlat")
@@ -149,7 +153,7 @@ class LTRMLat(AKRGrid):
             "mlat_bin": float(self.mlat_bin_size),
             "description": "AKR detection grid",
         }
-    
+
     # For plotting purposes, transform LT/R/MLat to Cartesian
     def _transform_to_cartesian(
         self,
@@ -160,12 +164,11 @@ class LTRMLat(AKRGrid):
         """Transform LT/R/MLat to Cartesian X/Y/Z."""
         theta = (12 - lt_val) * np.pi / 12  # Hours to radians
         mlat_rad = np.radians(mlat_val)
-        
+
         x = r_val * np.cos(mlat_rad) * np.cos(theta)
         y = r_val * np.cos(mlat_rad) * np.sin(theta)
         z = r_val * np.sin(mlat_rad)
-        
+
         return (x, y, z)
 
     # _____________________LTRMLat specific Methods_____________________
-

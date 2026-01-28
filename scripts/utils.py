@@ -171,8 +171,20 @@ def add_celestial_bodies(
             ),
         )
 
-def get_3d_layout_config(title_text: str) -> dict[str, Any]:
+
+def get_3d_layout_config(
+    title_text: str,
+    axis_labels: dict[str, str] | None = None,
+) -> dict[str, Any]:
     """Returns a standard Plotly layout configuration for GSE 3D plots."""
+    # Default labels
+    if axis_labels is None:
+        axis_labels = {
+            "x": "X (R<sub>E</sub>)",
+            "y": "Y (R<sub>E</sub>)",
+            "z": "Z (R<sub>E</sub>)",
+        }
+
     return {
         "title": {
             "text": title_text,
@@ -187,21 +199,21 @@ def get_3d_layout_config(title_text: str) -> dict[str, Any]:
         },
         "scene": {
             "xaxis": {
-                "title": {"text": "X (R<sub>E</sub>)", "font": {"size": 16}},
+                "title": {"text": axis_labels["x"], "font": {"size": 16}},
                 "tickfont": {"size": 12},
                 "gridcolor": "#cccccc",
                 "showbackground": True,
                 "backgroundcolor": "#f5f5f5",
             },
             "yaxis": {
-                "title": {"text": "Y (R<sub>E</sub>)", "font": {"size": 16}},
+                "title": {"text": axis_labels["y"], "font": {"size": 16}},
                 "tickfont": {"size": 12},
                 "gridcolor": "#cccccc",
                 "showbackground": True,
                 "backgroundcolor": "#f5f5f5",
             },
             "zaxis": {
-                "title": {"text": "Z (R<sub>E</sub>)", "font": {"size": 16}},
+                "title": {"text": axis_labels["z"], "font": {"size": 16}},
                 "tickfont": {"size": 12},
                 "gridcolor": "#cccccc",
                 "showbackground": True,
@@ -221,6 +233,7 @@ def get_3d_layout_config(title_text: str) -> dict[str, Any]:
         "margin": {"l": 0, "r": 0, "t": 70, "b": 0},
     }
 
+
 def save_plot(fig: go.Figure, path: str) -> None:
     """Saves a Plotly figure to an HTML or JSON file."""
     # Create the directory structure if it doesn't exist
@@ -235,4 +248,3 @@ def save_plot(fig: go.Figure, path: str) -> None:
     else:
         error_msg = f"Unsupported file extension in path: {path}. Use .html or .json"
         raise ValueError(error_msg)
-    
