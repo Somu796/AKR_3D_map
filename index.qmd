@@ -225,7 +225,6 @@ print(f"Total observations time logged: {(total_observation_time):.1f} seconds")
 
 #### Interactive Visualisation
 ```{python}
-# | eval: false
 import plotly.io as pio
 
 # Reload and display the 3D Interactive Map
