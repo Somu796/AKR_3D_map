@@ -136,9 +136,9 @@ print("__________ Data summary __________")
 display(wind_data.groupby("original_burst_id").size().describe().to_frame().T)
 ```
 
-## Analysis & 3D Grid Generation
-
-### Calculating residence time and preaping plot file 
+## Analysis & 3D Cartesian Grid Generation
+### Cartesian coordinates
+#### Calculating observation time and preaping plot file 
 ```{python}
 # 1. Importing Cartesian class from Package_Name
 from scripts.grid_3d import Cartesian
@@ -149,13 +149,13 @@ plot_save_path = f"{ASSETS_DIR}/cartesian_grid_with_observation_time.json"
 # 3. Performing analysis and generating plot
 cart = (
     # Provide bin size for the 3D plot
-    Cartesian(bin_size=1.0)
+    Cartesian()
     # In case you are not sure about the extreme points
     # .decide_boundaries(wind_data)
     # Create grid points
     .create_grid()
     # Calculate observations time given wind satellite data
-    .add_observation_time(wind_data)
+    .add_observation_time(wind_data, coord_colnames=("x_gse", "y_gse", "z_gse"))
     # Creating plot and saving as a json file (HPC save for big data)
     .plot_3d(
         variable="observation_time",
@@ -170,7 +170,14 @@ total_observation_time = cart.grid.observation_time.sum().item()
 print(f"Total observations time logged: {(total_observation_time):.1f} seconds")
 ```
 
-## Interactive Visualisation
+```{python}
+# | eval: false
+# | include: false
+# All the attributes in the Cartesian class
+dir(cart)
+```
+
+#### Interactive Visualisation
 ```{python}
 import plotly.io as pio
 
@@ -181,3 +188,51 @@ if Path(plot_save_path).exists():
 else:
     print(f"Error: Plot file not found at {plot_save_path}")
 ```
+
+
+### LTRMlat coordinates
+#### Calculating residence time and preaping plot file 
+```{python}
+# 1. Importing Cartesian class from Package_Name
+from scripts.grid_3d import LTRMLat
+
+# 2. Path to save the file
+plot_save_path = f"{ASSETS_DIR}/LTRMlat_grid_with_observation_time.json"
+
+# 3. Performing analysis and generating plot
+ltrmat = (
+    # Provide bin size for the 3D plot
+    LTRMLat()
+    # In case you are not sure about the extreme points
+    # .decide_boundaries(wind_data)
+    # Create grid points
+    .create_grid()
+    # Calculate observations time given wind satellite data
+    .add_observation_time(wind_data, coord_colnames=("LT_gse", "radius", "lat_gse"))
+    # Creating plot and saving as a json file (HPC save for big data)
+    .plot_3d(
+        variable="observation_time",
+        path=plot_save_path,
+        show_earth=True,
+        show_sun=False,
+    )
+)
+
+# 4. Validation: Total time should be > 0
+total_observation_time = ltrmat.grid.observation_time.sum().item()
+print(f"Total observations time logged: {(total_observation_time):.1f} seconds")
+```
+
+#### Interactive Visualisation
+```{python}
+# | eval: false
+import plotly.io as pio
+
+# Reload and display the 3D Interactive Map
+if Path(plot_save_path).exists():
+    LTRMLat_fig = pio.read_json(str(plot_save_path))
+    LTRMLat_fig.show()
+else:
+    print(f"Error: Plot file not found at {plot_save_path}")
+```
+
