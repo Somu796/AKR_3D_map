@@ -136,7 +136,7 @@ print("__________ Data summary __________")
 display(wind_data.groupby("original_burst_id").size().describe().to_frame().T)
 ```
 
-## Analysis & 3D Cartesian Grid Generation
+## Analysis & 3D Grid Generation
 ### Cartesian coordinates
 #### Calculating observation time and preaping plot file 
 ```{python}
@@ -223,7 +223,7 @@ total_observation_time = ltrmat.grid.observation_time.sum().item()
 print(f"Total observations time logged: {(total_observation_time):.1f} seconds")
 ```
 
-#### Interactive Visualisation
+#### Interactive Visualisation 
 ```{python}
 import plotly.io as pio
 
