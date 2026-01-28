@@ -6,7 +6,9 @@ scripts/__pycache__/
 .mypy_cache/
 .jupyter_cache/
 
+
 # Folders
+akr_3d_map.egg-info/
 documents/
 # data/
 data/raw/fogg_akr_burst_list_1995_2004.csv
@@ -22,3 +24,6 @@ Folder_structure.md
 01_3D_Visualisation.py
 10_all.py
 /.quarto/
+
+scripts/README.md
+

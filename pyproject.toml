@@ -29,3 +29,21 @@ dependencies = [
     "tfcat>=1.0.3",
     "xarray>=2025.12.0",
 ]
+
+# Tells Python how to build your package
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+# Tells setuptools where your code is
+[tool.setuptools.packages.find]
+where = ["."]              # Look in project root
+include = ["scripts*"]     # Include the scripts package
+
+# Add dev dependencies
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0.0",
+    "mypy>=1.8.0",
+    "ruff>=0.1.0",
+]
