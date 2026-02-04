@@ -108,7 +108,7 @@ class ObservationTimeCalculator:
         # 6. Group by bin indices and sum intervals
         grouped = df_in_grid.groupby(
             [f"bin_{dim_names[0]}", f"bin_{dim_names[1]}", f"bin_{dim_names[2]}"],
-        )["time_interval"].sum()
+        )[time_interval_colname].sum()
 
         # 7. Update the internal xarray data directly
         obs_array: np.ndarray = grid.observation_time.data
@@ -170,7 +170,7 @@ class ObservationTimeCalculator:
         # 6. Group by bin indices and sum intervals
         grouped = df_in_grid.groupby(
             [f"bin_{dim_names[0]}", f"bin_{dim_names[1]}", f"bin_{dim_names[2]}"],
-        )["time_interval"].sum()
+        )[time_interval_colname].sum()
 
         # 7. Update the internal xarray data directly
         obs_array: np.ndarray = grid.observation_time.data
