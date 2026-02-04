@@ -11,7 +11,7 @@ scripts/__pycache__/
 akr_3d_map.egg-info/
 documents/
 # data/
-data/raw/fogg_akr_burst_list_1995_2004.csv
+data/raw/
 data/processed/01_processed_wind_data_fogg_akr_burst_list_1995_2004.json
 learning/
 notebooks/

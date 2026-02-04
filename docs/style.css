@@ -1,0 +1,4 @@
+.dim-cell pre code {
+    opacity: 0.4;
+    /* Adjust 0.3-0.6 for desired dimness */
+}

@@ -140,11 +140,11 @@ class ObservationTimeCalculator:
             Self: for method chaining
 
         Example:
-            >>> cart.add_observation_time(
-            df=spacecraft_data,
+            >>> cart.add_burst_count(
+            df=wind_data,
             coord_colnames=("x_gse", "y_gse", "z_gse"),
             )
-            >>> observation_time = cart.grid.observation_time  # Access the populated grid
+            >>> burst_count_data = cart.grid.burst_count  # Access the populated grid
 
         """
         # 1. Validations
@@ -170,14 +170,14 @@ class ObservationTimeCalculator:
         # 6. Group by bin indices and sum intervals
         grouped = df_in_grid.groupby(
             [f"bin_{dim_names[0]}", f"bin_{dim_names[1]}", f"bin_{dim_names[2]}"],
-        )[time_interval_colname].sum()
+        )[burst_id_colname].nunique()
 
         # 7. Update the internal xarray data directly
-        obs_array: np.ndarray = grid.observation_time.data
+        obs_array: np.ndarray = grid.burst_count.data
 
-        for iteration, (idx, total_time) in enumerate(grouped.items()):
+        for iteration, (idx, n_bursts) in enumerate(grouped.items()):
             i, j, k = cast("tuple[int, int, int]", idx)
-            obs_array[int(i), int(j), int(k)] += total_time
+            obs_array[int(i), int(j), int(k)] += n_bursts
 
             if iteration % 500 == 0:
                 print(f"Update in progress... processed {iteration} bins.")

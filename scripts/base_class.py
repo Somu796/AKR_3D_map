@@ -273,7 +273,7 @@ class AKRGrid(ABC, ObservationTimeCalculator):
         Generic grid creation logic.
 
         Returns:
-            self with xarray Dataset with coordinates (x, y, z) containing
+            Self: with xarray Dataset with coordinates (x, y, z) containing
             placeholder data variables for observation_time, burst_count, burst_time,
             and probability.
 
@@ -507,7 +507,19 @@ class AKRGrid(ABC, ObservationTimeCalculator):
         show_earth: bool = True,
         show_sun: bool = False,
     ) -> "AKRGrid":
-        """Plot 3D grid with wireframe (works for ALL coordinate systems)."""
+        """
+        Plot 3D grid with wireframe (works for ALL coordinate systems).
+
+        Args:
+            variable: Name of the variable to plot (optional)
+            path: Path to save the HTML file (default: '3D_Objects/grid.html')
+            show_earth: Whether to show Earth in the plot (default: True)
+            show_sun: Whether to show Sun in the plot (default: False)
+
+        Returns:
+            Self: for method chaining
+
+        """
         # 1. Validate grid
         grid = self._validate_and_get_grid()
         dim_names = self.get_dimension_names()  # Retrieve dimension names
