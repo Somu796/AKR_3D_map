@@ -37,12 +37,17 @@ def load_apply_schema_wind_csv(path: str) -> pd.DataFrame:
 
 
 # Exploding and removing NaNs from wind data DataFrame
-def exploding_saving_wind_data(df: pd.DataFrame) -> pd.DataFrame:
+def exploding_saving_wind_data(
+    df: pd.DataFrame,
+    *,
+    drop_na: bool = True,
+) -> pd.DataFrame:
     """
     Explode the wind data DataFrame and remove rows with NaNs.
 
     Args:
         df (pd.DataFrame): Input DataFrame with list columns.
+        drop_na (bool) : True or False. Whether to drop NA values.
 
     Returns:
         pd.DataFrame: Exploded DataFrame with NaNs removed.
@@ -65,7 +70,8 @@ def exploding_saving_wind_data(df: pd.DataFrame) -> pd.DataFrame:
 
     # 3. Remove rows where ANY of the data columns are NaN
     # We use the same list of columns to check for missing values
-    df_exploded = df_exploded.dropna(subset=list_cols, how="any")
-    print(f"Data cleaned. Remaining rows: {len(df_exploded)}")
+    if drop_na:
+        df_exploded = df_exploded.dropna(subset=list_cols, how="any")
+        print(f"Data cleaned. Remaining rows: {len(df_exploded)}")
 
     return df_exploded
