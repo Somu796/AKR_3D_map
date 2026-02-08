@@ -11,7 +11,7 @@ import plotly.io as pio  # type: ignore[import-untyped]
 from PIL import Image
 from pydantic import validate_call
 
-from scripts.variables import NumericType, PositiveNumber
+from scripts.variables import NumericType, PositiveNumber, background_color, grid_color
 
 
 # %% 1D bin creation function
@@ -201,23 +201,23 @@ def get_3d_layout_config(
             "xaxis": {
                 "title": {"text": axis_labels["x"], "font": {"size": 16}},
                 "tickfont": {"size": 12},
-                "gridcolor": "#cccccc",
+                "gridcolor": grid_color,
                 "showbackground": True,
-                "backgroundcolor": "#f5f5f5",
+                "backgroundcolor": background_color,
             },
             "yaxis": {
                 "title": {"text": axis_labels["y"], "font": {"size": 16}},
                 "tickfont": {"size": 12},
-                "gridcolor": "#cccccc",
+                "gridcolor": grid_color,
                 "showbackground": True,
-                "backgroundcolor": "#f5f5f5",
+                "backgroundcolor": background_color,
             },
             "zaxis": {
                 "title": {"text": axis_labels["z"], "font": {"size": 16}},
                 "tickfont": {"size": 12},
-                "gridcolor": "#cccccc",
+                "gridcolor": grid_color,
                 "showbackground": True,
-                "backgroundcolor": "#f5f5f5",
+                "backgroundcolor": background_color,
             },
             "camera": {
                 "eye": {"x": 0.3, "y": 2.5, "z": 0.8},

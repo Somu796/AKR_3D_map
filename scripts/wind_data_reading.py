@@ -1,6 +1,11 @@
+from pathlib import Path
+from typing import Any
+
+import numpy as np
 import pandas as pd
 
 
+# %% This is for AKR Burst data reading
 # Loading and applying schema to wind data from CSV
 def load_apply_schema_wind_csv(path: str) -> pd.DataFrame:
     """
@@ -75,3 +80,77 @@ def exploding_saving_wind_data(
         print(f"Data cleaned. Remaining rows: {len(df_exploded)}")
 
     return df_exploded
+
+
+# %% Residence Data Processing
+
+
+def convert_to_timestamp(df: pd.DataFrame) -> pd.DataFrame:
+    """Take residence data frame and convert its 3 colmns yyyy doy and hh:mm:ss to Timestamp."""
+    # Use .assign to create columns without modifying the original slice immediately
+    time_col = (
+        pd.to_datetime(df["yyyy"], format="%Y")
+        + pd.to_timedelta(df["doy"].astype(int) - 1, unit="D")
+        + pd.to_timedelta(df["hh:mm:ss"])
+    )
+
+    to_remove = {"yyyy", "doy", "hh:mm:ss"}
+    # Keep original order of remaining columns
+    other_cols = [c for c in df.columns if c not in to_remove]
+
+    # Return a fresh DataFrame with the new column at index 0
+    return df.assign(time_stamp=time_col)[["time_stamp", *other_cols]]
+
+
+def to_decimal_hours(time_val: pd.Series) -> float:
+    """Takes in LT_gse in hh:mm:ss ad convert to float time."""
+    if pd.isna(time_val) or str(time_val).lower() == "nan":
+        return np.nan
+    try:
+        parts = str(time_val).strip().split(":")
+        h, m, s = map(float, parts)
+        return h + (m / 60.0) + (s / 3600.0)
+    except (ValueError, AttributeError, IndexError):
+        return np.nan
+
+
+def vstack_residence_data(target_path_obj: "str", output_path: str) -> None:
+    files = list(
+        Path(target_path_obj).glob("wind*"),
+    )  # Get specific files using pathlib
+
+    df_list = []  # List to collect DataFrames
+
+    for file_path in files:
+        print(f"processing {file_path}")
+        read_options: dict[str, Any] = {
+            "filepath_or_buffer": file_path,
+            "sep": r"\s+",
+            "engine": "python",
+        }
+
+        # 1. Read and process
+        df: pd.DataFrame = pd.read_csv(**read_options)
+        df = convert_to_timestamp(df)
+
+        # 2. Process LT (Local Time)
+        # Using .copy() here is good practice to ensure we own the data
+        df = df.copy()
+        df["gseLT"] = df["gseLT"].map(to_decimal_hours)
+
+        df_list.append(df)
+
+    # 3. Concatenate all at once (Much faster!)
+    if df_list:
+        main_df = pd.concat(df_list, axis=0, ignore_index=True)
+
+        # 4. Save to Parquet
+        # Note: Parquet usually takes a string path, use .as_posix() for pathlib compatibility
+        main_df.to_parquet(
+            Path(output_path).as_posix(),
+            engine="pyarrow",
+            index=False,
+            compression="snappy",
+        )
+    else:
+        print("No files found to process.")
