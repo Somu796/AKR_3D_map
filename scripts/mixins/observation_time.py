@@ -186,5 +186,66 @@ class ObservationTimeCalculator:
 
         return self  # type: ignore[return-value]
 
+    def add_residence_time(
+        self,
+        df: pd.DataFrame,
+        coord_colnames: tuple[str, str, str],
+    ) -> Self:
+        """
+        Populate the grid with residence time (total seconds spent per bin).
+
+        Args:
+            df: DataFrame with position and interval data
+            coord_colnames: Column names for coordinates (coord1, coord2, coord3)
+
+        Returns:
+            Self: for method chaining
+
+        """
+        # 1. Validations
+        grid = self._validate_and_get_grid()  # type: ignore[attr-defined]
+        self._validate_coord_colnames(df, coord_colnames)  # type: ignore[attr-defined]
+
+        # 2. Identify dimension names
+        dim_names = self.get_dimension_names()  # type: ignore[attr-defined]
+
+        # 3. Ensure time intervals exist (Calculation logic)
+        if time_interval_colname not in df.columns:
+            df = self._add_time_intervals(df)
+
+        # 4. Assign bins based on coordinates
+        df = self._assign_bin_indices(df, coord_colnames)  # type: ignore[attr-defined]
+
+        # 5. Filter for data within grid boundaries
+        in_grid = (
+            (df[f"bin_{dim_names[0]}"] >= 0)
+            & (df[f"bin_{dim_names[1]}"] >= 0)
+            & (df[f"bin_{dim_names[2]}"] >= 0)
+        )
+        df_in_grid = df[in_grid]
+
+        # 6. Group by bin indices and SUM the time intervals
+        # This gives total residence time per 3D cell
+        grouped = df_in_grid.groupby(
+            [f"bin_{dim_names[0]}", f"bin_{dim_names[1]}", f"bin_{dim_names[2]}"],
+        )[time_interval_colname].sum()
+
+        # 7. Update the internal xarray data (residence_time)
+        # Assuming your grid object has a .residence_time data variable
+        res_array: np.ndarray = grid.residence_time.data
+
+        for iteration, (idx, total_residence) in enumerate(grouped.items()):
+            i, j, k = cast("tuple[int, int, int]", idx)
+            res_array[int(i), int(j), int(k)] += total_residence
+
+            if iteration % 500 == 0:
+                print(f"Residence Update: processed {iteration} bins.")
+
+        print(
+            f"Grid populated: {np.count_nonzero(res_array)} bins updated with residence time.",
+        )
+
+        return self  # type: ignore[return-value]
+
 
 # %%
