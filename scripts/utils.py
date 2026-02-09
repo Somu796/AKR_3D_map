@@ -11,7 +11,13 @@ import plotly.io as pio  # type: ignore[import-untyped]
 from PIL import Image
 from pydantic import validate_call
 
-from scripts.variables import NumericType, PositiveNumber, background_color, grid_color
+from scripts.variables import (
+    NumericType,
+    PositiveNumber,
+    background_color,
+    earth_image_path_str,
+    grid_color,
+)
 
 
 # %% 1D bin creation function
@@ -96,12 +102,77 @@ def add_grid_wireframe(
     )
 
 
+def create_textured_globe(image_path: str, radius: float = 1.0) -> go.Surface:
+    """Creates a 3D Earth globe where the night side (GSE -X) is automatically darkened using a shadow mask."""
+    # 1. Load texture
+    img = Image.open(image_path).convert("RGB")
+    img = img.resize((400, 200))
+    img_data = np.array(img)
+    intensity = np.mean(img_data, axis=2) / 255.0
+
+    # 2. Geometry (GSE Aligned)
+    u = np.linspace(0, 2 * np.pi, intensity.shape[1])
+    v = np.linspace(0, np.pi, intensity.shape[0])
+    lon, lat = np.meshgrid(u, v)
+
+    # X is sunward (+X), Y is dusk (+Y), Z is north (+Z)
+    x = radius * np.sin(lat) * np.cos(lon + np.pi)
+    y = radius * np.sin(lat) * np.sin(lon + np.pi)
+    z = radius * np.cos(lat)
+
+    # 3. MATHEMATICAL SHADOW MASK (Fixed to Axis)
+    # Any point where x < 0 is "Night".
+    # We create a transition at the terminator (x=0)
+    # This makes the shading constant relative to the GSE coordinates, NOT the camera.
+    shadow_mask = x / radius  # Values from -1 to 1
+
+    # Sigmoid-like transition for a realistic "terminator" line
+    # 0.5 at x=0, 1.0 at x=radius, ~0.0 at x=-radius
+    shadow_mask = np.clip((shadow_mask * 10) + 0.5, 0.05, 1.0)
+
+    # Bake the shadow into the intensity
+    axis_fixed_intensity = intensity * shadow_mask
+
+    # 4. Color Mapping
+    custom_earth_colors = [
+        [0.0, "rgb(0, 19, 30)"],  # Your deep night shade
+        [0.1, "rgb(30, 59, 117)"],
+        [0.2, "rgb(46, 68, 21)"],
+        [0.5, "rgb(122, 126, 75)"],
+        [0.8, "rgb(223, 197, 170)"],
+        [1.0, "rgb(255, 255, 255)"],
+    ]
+
+    # 5. Create Trace
+    earth_trace = go.Surface(
+        {
+            "x": x,
+            "y": y,
+            "z": z,
+            "name": "earth",
+            "surfacecolor": axis_fixed_intensity,  # Baked shading
+            "colorscale": custom_earth_colors,
+            "showscale": False,
+            "hoverinfo": "none",
+            "lighting": {
+                "ambient": 0.9,  # High ambient because shading is now in 'surfacecolor'
+                "diffuse": 0.1,  # Low diffuse so camera movement doesn't overwrite our mask
+                "fresnel": 0.1,
+                "specular": 0.0,
+                "roughness": 1.0,
+            },
+        },
+    )
+
+    return earth_trace
+
+
 def add_celestial_bodies(
     fig: go.Figure,
     *,
     show_earth: bool = True,
     show_sun: bool = False,
-    earth_image_path: str = "assets/flat_earth_image_no_cloud.png",
+    earth_image_path: str = earth_image_path_str,
 ) -> go.Figure:
     """Adds Earth and/or Sun surfaces to a Plotly figure."""
     # 1. Generate base sphere coordinates
@@ -113,31 +184,8 @@ def add_celestial_bodies(
 
     if show_earth:
         if Path(earth_image_path).exists():
-            # Load local texture
-            img = Image.open(earth_image_path).convert("L")
-            # Convert image to numerical array and normalize
-            # We use the mean of RGB to get a brightness map of the continents
-            img_data = np.array(img)
-
-            fig.add_trace(
-                go.Surface(
-                    x=x_sphere,
-                    y=y_sphere,
-                    z=z_sphere,
-                    surfacecolor=np.flipud(img_data),
-                    colorscale=[
-                        [0, "rgb(10, 20, 50)"],  # Deep Oceans
-                        [0.4, "rgb(30, 80, 140)"],  # Coastlines
-                        [0.45, "rgb(60, 120, 40)"],  # Vegetation
-                        [0.7, "rgb(180, 170, 120)"],  # Desert/Highlands
-                        [1, "rgb(255, 255, 255)"],  # Clouds/Ice
-                    ],
-                    showscale=False,
-                    name="Earth",
-                    hoverinfo="name",
-                    lighting={"ambient": 0.6, "diffuse": 0.8, "specular": 0.1},
-                ),
-            )
+            globe = create_textured_globe(earth_image_path)
+            fig = go.Figure(data=[globe])
         else:
             print(f"Warning: {earth_image_path} not found. Using fallback sphere.")
             fig.add_trace(
@@ -195,7 +243,7 @@ def get_3d_layout_config(
         "font": {
             "family": "Times New Roman, Times, serif",
             "size": 14,
-            "color": "#1a1a1a",
+            "color": "white",  # "#1a1a1a",
         },
         "scene": {
             "xaxis": {
@@ -229,7 +277,7 @@ def get_3d_layout_config(
         },
         "width": 1000,
         "height": 800,
-        "paper_bgcolor": "white",
+        "paper_bgcolor": background_color,  # "white",
         "margin": {"l": 0, "r": 0, "t": 70, "b": 0},
     }
 
