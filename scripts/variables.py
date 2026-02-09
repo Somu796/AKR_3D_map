@@ -5,7 +5,7 @@ from pydantic import Field
 type NumericType = int | float
 PositiveNumber = Annotated[NumericType, Field(gt=0)]
 
-# %% Number of coordinates
+# %% Number of coordinatess
 n_coord_colnames = 3
 padding_grid = 0.01  # Default padding for grid boundaries
 background_color = "#1d1d1d"  # "#f5f5f5"
