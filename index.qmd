@@ -77,7 +77,8 @@ ASSETS_DIR = project_root / "assets" / "3D_Objects"
 ```
 
 ## Data Ingestion & Pre-processing
-### *Reading* csv file and applying data type schema
+### AKR burst data processing
+#### *Reading* csv file and applying data type schema
 ```{python}
 # | eval: false
 # 1. Importing functions from Package_Name
@@ -92,14 +93,14 @@ wind_data = load_apply_schema_wind_csv(
 )
 ```
 
-### *Processing:* Exploding the data and filtering
+#### *Processing:* Exploding the data and filtering
 ```{python}
 # | eval: false
 # 1. Exploding nested data and filtering NaNs
 wind_data_processed = exploding_saving_wind_data(wind_data)
 ```
 
-### *Saving* as parquet or json
+#### *Saving* as parquet or json
 ```{python}
 # | eval: false
 # 1. Processed data name
@@ -121,7 +122,23 @@ wind_data_processed.to_json(
 print(f"Data successfully saved to: {PROCESSED_DATA_DIR}")
 ```
 
+### Residence time data processing
+```{python}
+# | eval: false
+
+# 1. library
+from scripts.wind_data_reading import vstack_residence_data
+
+# 2. residence data in txt format for individual years
+target_path_obj = f"{RAW_DATA_DIR}/residence_data"
+output_path = f"{RAW_DATA_DIR}/residence_data.parquet"
+
+# 3. processing to parquet and saving in output_path
+vstack_residence_data(target_path_obj, output_path)
+```
+
 ## Importing Pre-processed Parquet Data for **Analysis**
+### Importing AKR burst data
 ```{python}
 # 1. Importing libraries
 import pandas as pd
@@ -139,6 +156,21 @@ print("__________ Data summary __________")
 display(wind_data.groupby("original_burst_id").size().describe().to_frame().T)
 ```
 
+### Importing residence time data
+```{python}
+# 1. Importing libraries
+import pandas as pd
+
+# 2. Importing parquet file
+residence_data = pd.read_parquet(
+    f"{project_root}/data/processed/02_processed_wind_data_residence_time_1995_2004.parquet",
+)
+
+# 3. Descriptory analysis
+print("__________ Data type of columns __________")
+display(residence_data.describe().T)
+print("\n")
+```
 ## Analysis & 3D Grid Generation
 
 ### Burst counts
