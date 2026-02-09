@@ -140,6 +140,104 @@ display(wind_data.groupby("original_burst_id").size().describe().to_frame().T)
 ```
 
 ## Analysis & 3D Grid Generation
+
+### Burst counts
+#### Cartesian coordinates
+##### Calculating observation time and preaping plot file 
+```{python}
+# | source-line-numbers: "5,16,19,27,28"
+# 1. Importing Cartesian class from Package_Name
+from scripts.grid_3d import Cartesian
+
+# 2. Path to save the file
+plot_save_path = f"{ASSETS_DIR}/cartesian_grid_with_burst_counts.json"
+
+# 3. Performing analysis and generating plot
+cart = (
+    # Provide bin size for the 3D plot
+    Cartesian()
+    # In case you are not sure about the extreme points
+    # .decide_boundaries(wind_data)
+    # Create grid points
+    .create_grid()
+    # Calculate burst count given wind satellite data
+    .add_burst_count(wind_data, coord_colnames=("x_gse", "y_gse", "z_gse"))
+    # Creating plot and saving as a json file (HPC save for big data)
+    .plot_3d(
+        variable="burst_count",
+        path=plot_save_path,
+        show_earth=True,
+        show_sun=False,
+    )
+)
+
+# 4. Validation: Total time should be > 0
+total_burst_count = cart.grid.burst_count.sum().item()
+print(f"Total observations time logged: {(total_burst_count):.1f} seconds")
+```
+
+##### Interactive Visualisation
+```{python}
+# | class: "dim-cell"
+import plotly.io as pio
+
+# Reload and display the 3D Interactive Map
+if Path(plot_save_path).exists():
+    cartesian_fig = pio.read_json(str(plot_save_path))
+    cartesian_fig.show()
+else:
+    print(f"Error: Plot file not found at {plot_save_path}")
+```
+
+
+#### LTRMlat coordinates
+##### Calculating residence time and preaping plot file 
+```{python}
+# | source-line-numbers: "5,16,19,27,28"
+# 1. Importing Cartesian class from Package_Name
+from scripts.grid_3d import LTRMLat
+
+# 2. Path to save the file
+plot_save_path = f"{ASSETS_DIR}/LTRMlat_grid_with_burst_counts.json"
+
+# 3. Performing analysis and generating plot
+ltrmat = (
+    # Provide bin size for the 3D plot
+    LTRMLat()
+    # In case you are not sure about the extreme points
+    # .decide_boundaries(wind_data)
+    # Create grid points
+    .create_grid()
+    # Calculate burst count given wind satellite data
+    .add_burst_count(wind_data, coord_colnames=("LT_gse", "radius", "lat_gse"))
+    # Creating plot and saving as a json file (HPC save for big data)
+    .plot_3d(
+        variable="burst_count",
+        path=plot_save_path,
+        show_earth=True,
+        show_sun=False,
+    )
+)
+
+# 4. Validation: Total time should be > 0
+total_burst_count = ltrmat.grid.burst_count.sum().item()
+print(f"Total observations time logged: {(total_burst_count):.1f} seconds")
+```
+
+##### Interactive Visualisation 
+```{python}
+# | class: "dim-cell"
+import plotly.io as pio
+
+# Reload and display the 3D Interactive Map
+if Path(plot_save_path).exists():
+    LTRMLat_fig = pio.read_json(str(plot_save_path))
+    LTRMLat_fig.show()
+else:
+    print(f"Error: Plot file not found at {plot_save_path}")
+```
+
+
 ### Observation time
 #### Cartesian coordinates
 ##### Calculating observation time and preaping plot file 
@@ -243,7 +341,7 @@ else:
 
 
 
-### Burst counts
+### Residence Time
 #### Cartesian coordinates
 ##### Calculating observation time and preaping plot file 
 ```{python}
@@ -252,7 +350,7 @@ else:
 from scripts.grid_3d import Cartesian
 
 # 2. Path to save the file
-plot_save_path = f"{ASSETS_DIR}/cartesian_grid_with_burst_counts.json"
+plot_save_path = f"{ASSETS_DIR}/cartesian_grid_with_residence_data.json"
 
 # 3. Performing analysis and generating plot
 cart = (
@@ -262,11 +360,11 @@ cart = (
     # .decide_boundaries(wind_data)
     # Create grid points
     .create_grid()
-    # Calculate burst count given wind satellite data
-    .add_burst_count(wind_data, coord_colnames=("x_gse", "y_gse", "z_gse"))
+    # Calculate residence time given wind satellite data
+    .add_residence_time(residence_data, coord_colnames=("x_gse", "y_gse", "z_gse"))
     # Creating plot and saving as a json file (HPC save for big data)
     .plot_3d(
-        variable="burst_count",
+        variable="residence_time",
         path=plot_save_path,
         show_earth=True,
         show_sun=False,
@@ -274,8 +372,8 @@ cart = (
 )
 
 # 4. Validation: Total time should be > 0
-total_burst_count = cart.grid.burst_count.sum().item()
-print(f"Total observations time logged: {(total_burst_count):.1f} seconds")
+total_residence_time = cart.grid.residence_time.sum().item()
+print(f"Total observations time logged: {(total_residence_time):.1f} seconds")
 ```
 
 ##### Interactive Visualisation
@@ -300,7 +398,7 @@ else:
 from scripts.grid_3d import LTRMLat
 
 # 2. Path to save the file
-plot_save_path = f"{ASSETS_DIR}/LTRMlat_grid_with_burst_counts.json"
+plot_save_path = f"{ASSETS_DIR}/LTRMLat_grid_with_residence_data.json"
 
 # 3. Performing analysis and generating plot
 ltrmat = (
@@ -310,11 +408,11 @@ ltrmat = (
     # .decide_boundaries(wind_data)
     # Create grid points
     .create_grid()
-    # Calculate burst count given wind satellite data
-    .add_burst_count(wind_data, coord_colnames=("LT_gse", "radius", "lat_gse"))
+    # Calculate residence time given wind satellite data
+    .add_residence_time(residence_data, coord_colnames=("x_gse", "y_gse", "z_gse"))
     # Creating plot and saving as a json file (HPC save for big data)
     .plot_3d(
-        variable="burst_count",
+        variable="residence_time",
         path=plot_save_path,
         show_earth=True,
         show_sun=False,

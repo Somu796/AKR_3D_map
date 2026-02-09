@@ -49,9 +49,9 @@ class Cartesian(AKRGrid):
     x_range: tuple[NumericType, NumericType] = (-15, 15)
     y_range: tuple[NumericType, NumericType] = (-15, 15)
     z_range: tuple[NumericType, NumericType] = (-10, 10)
-    x_bin_size: PositiveNumber = 0.5
-    y_bin_size: PositiveNumber = 0.5
-    z_bin_size: PositiveNumber = 0.5
+    x_bin_size: PositiveNumber = 0.2
+    y_bin_size: PositiveNumber = 0.2
+    z_bin_size: PositiveNumber = 0.2
     plot_in_cartesian: ClassVar[bool] = True
     # grid: xr.Dataset | None = None
 
@@ -122,7 +122,7 @@ class LTRMLat(AKRGrid):
     r_range: tuple[NumericType, NumericType] = (0, 15)
     mlat_range: tuple[NumericType, NumericType] = (-90, 90)
     lt_bin_size: PositiveNumber = 1.0
-    r_bin_size: PositiveNumber = 25.0
+    r_bin_size: PositiveNumber = 0.2
     mlat_bin_size: PositiveNumber = 5.0
     plot_in_cartesian: ClassVar[bool] = True
     # grid: xr.Dataset | None = None

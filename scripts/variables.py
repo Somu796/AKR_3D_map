@@ -13,5 +13,4 @@ grid_color = "#313131"  # "#f5f5f5"
 
 # %% Datframe column names
 burst_id_colname = "original_burst_id"
-burst_timestamp_colname = "burst_timestamp"
 time_interval_colname = "time_interval"

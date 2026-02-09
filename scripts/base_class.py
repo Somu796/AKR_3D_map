@@ -499,6 +499,47 @@ class AKRGrid(ABC, ObservationTimeCalculator):
             "z": f"{dim_names[2]} ({units[2]})",
         }
 
+    def _get_hover_params(
+        self,
+        grid: xr.Dataset,
+        ii: np.ndarray,
+        jj: np.ndarray,
+        kk: np.ndarray,
+        variable: str,
+        unit_str: str,
+    ) -> dict[str, Any]:
+        """Generates customdata and hovertemplate for 3D markers."""
+        dim_names = self.get_dimension_names()
+        clean_name = variable.replace("_", " ").title()
+
+        # 1. Prepare Native Coordinates for the hover box
+        # We extract the actual coordinate values for each active bin
+        coord0_vals = grid[dim_names[0]].to_numpy()[ii]
+        coord1_vals = grid[dim_names[1]].to_numpy()[jj]
+        coord2_vals = grid[dim_names[2]].to_numpy()[kk]
+
+        # Stack into (N, 3) array for Plotly's customdata
+        customdata = np.stack((coord0_vals, coord1_vals, coord2_vals), axis=-1)
+
+        # 2. Build the Hover Template
+        # %{x}, %{y}, %{z} refer to the positions in the plot
+        # %{customdata[i]} refers to the native grid coordinates
+        template = (
+            f"<b>{clean_name}</b>: %{{marker.color:.2f}}{unit_str}<br>"
+            f"----------------<br>"
+            f"{dim_names[0]}: %{{customdata[0]:.2f}}<br>"
+            f"{dim_names[1]}: %{{customdata[1]:.2f}}<br>"
+            f"{dim_names[2]}: %{{customdata[2]:.2f}}<br>"
+        )
+
+        # If we are in Cartesian mode, show X, Y, Z plot values as well
+        if self.plot_in_cartesian:
+            template += "Plot X: %{x:.2f} | Y: %{y:.2f} | Z: %{z:.2f}<br>"
+
+        template += "<extra></extra>"
+
+        return {"customdata": customdata, "hovertemplate": template}
+
     def plot_3d(
         self,
         variable: str | None = None,
@@ -566,12 +607,24 @@ class AKRGrid(ABC, ObservationTimeCalculator):
                     plot_y = grid[dim_names[1]].to_numpy()[jj].tolist()
                     plot_z = grid[dim_names[2]].to_numpy()[kk].tolist()
 
+                # Accessing the hover template
+                hover_params = self._get_hover_params(
+                    grid,
+                    ii,
+                    jj,
+                    kk,
+                    variable,
+                    unit_str,
+                )
+                # Plotting the figure
                 fig.add_trace(
                     go.Scatter3d(
                         x=plot_x,
                         y=plot_y,
                         z=plot_z,
                         mode="markers",
+                        customdata=hover_params["customdata"],
+                        hovertemplate=hover_params["hovertemplate"],
                         marker={
                             "size": 5,
                             "color": data_array[ii, jj, kk],
@@ -585,7 +638,6 @@ class AKRGrid(ABC, ObservationTimeCalculator):
                         },
                         name=clean_name if variable else "Data",
                         showlegend=False,
-                        hovertemplate="Value: %{marker.color:.2f}<extra></extra>",
                     ),
                 )
 

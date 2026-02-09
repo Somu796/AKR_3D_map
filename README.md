@@ -81,3 +81,4 @@ Akr3Map_project/
 3. Also better to add the orbit of the satellite. To see better.
 4. Camera angle should be better.
 5. Add data layer as function so can be performed for many variables then name, and color need to be checked.
+6. Make Quarto slides and make multipage website

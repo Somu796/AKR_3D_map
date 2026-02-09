@@ -9,7 +9,6 @@ import pandas as pd
 # from scripts.grid_3d import Cartesian, LTRMLat
 from scripts.variables import (
     burst_id_colname,
-    burst_timestamp_colname,
     time_interval_colname,
 )
 
@@ -27,12 +26,19 @@ class ObservationTimeCalculator:
     - get_dimension_names() method
     """
 
-    def _add_time_intervals(self, df: pd.DataFrame) -> pd.DataFrame:
+    def _add_time_intervals(
+        self,
+        df: pd.DataFrame,
+        timestamp_colname: str,
+        variable: str | None = None,
+    ) -> pd.DataFrame:
         """
         Add a column 'time_interval' showing how long spacecraft was at each position.
 
         Args:
             df: DataFrame with 'original_burst_id' and 'burst_timestamp' columns
+            variable: depending on for which variable the calculation differs
+            timestamp_colname: date.time column to calculate the time interval
 
         Returns:
             DataFrame with new 'time_interval' column (in seconds)
@@ -42,20 +48,27 @@ class ObservationTimeCalculator:
             - For last position in each burst, use same interval as previous
 
         """
-        df = df.sort_values(by=[burst_id_colname, burst_timestamp_colname])
+        if variable == "residence_time":
+            df = df.sort_values(by=[timestamp_colname])
+            next_time = df[timestamp_colname].shift(-1)
 
-        # Get the NEXT timestamp
-        next_time = df.groupby(burst_id_colname)[burst_timestamp_colname].shift(-1)
+        if variable == "observation_time":
+            df = df.sort_values(by=[burst_id_colname, timestamp_colname])
+            # Get the NEXT timestamp
+            next_time = df.groupby(burst_id_colname)[timestamp_colname].shift(-1)
 
         # Time interval = next_time - current_time
         df[time_interval_colname] = (
-            next_time - df[burst_timestamp_colname]
+            next_time - df[timestamp_colname]
         ).dt.total_seconds()
 
         # For last position in each burst, use previous interval
-        df[time_interval_colname] = df.groupby(burst_id_colname)[
-            time_interval_colname
-        ].ffill()
+        if variable == "residence_time":
+            df[time_interval_colname] = df[time_interval_colname].ffill()
+        if variable == "observation_time":
+            df[time_interval_colname] = df.groupby(burst_id_colname)[
+                time_interval_colname
+            ].ffill()
 
         return df
 
@@ -63,6 +76,7 @@ class ObservationTimeCalculator:
         self,
         df: pd.DataFrame,
         coord_colnames: tuple[str, str, str],
+        timestamp_colname: str = "burst_timestamp",
     ) -> Self:
         """
         Calculate time intervals and populate the grid with observation time.
@@ -70,6 +84,7 @@ class ObservationTimeCalculator:
         Args:
             df: DataFrame with position and timestamp data
             coord_colnames: Column names for coordinates (coord1, coord2, coord3)
+            timestamp_colname: which datetime column to use to calculate the time interval
 
         Returns:
             Self: for method chaining
@@ -92,7 +107,11 @@ class ObservationTimeCalculator:
         dim_names = self.get_dimension_names()  # type: ignore[attr-defined]
 
         # 3. Add time intervals
-        df = self._add_time_intervals(df)
+        df = self._add_time_intervals(
+            df,
+            timestamp_colname=timestamp_colname,
+            variable="observation_time",
+        )
 
         # 4. Assign bins
         df = self._assign_bin_indices(df, coord_colnames)  # type: ignore[attr-defined]
@@ -190,6 +209,7 @@ class ObservationTimeCalculator:
         self,
         df: pd.DataFrame,
         coord_colnames: tuple[str, str, str],
+        timestamp_colname: str = "time_stamp",
     ) -> Self:
         """
         Populate the grid with residence time (total seconds spent per bin).
@@ -197,6 +217,7 @@ class ObservationTimeCalculator:
         Args:
             df: DataFrame with position and interval data
             coord_colnames: Column names for coordinates (coord1, coord2, coord3)
+            timestamp_colname: which datetime column to use to calculate the time interval
 
         Returns:
             Self: for method chaining
@@ -211,7 +232,11 @@ class ObservationTimeCalculator:
 
         # 3. Ensure time intervals exist (Calculation logic)
         if time_interval_colname not in df.columns:
-            df = self._add_time_intervals(df)
+            df = self._add_time_intervals(
+                df,
+                timestamp_colname=timestamp_colname,
+                variable="residence_time",
+            )
 
         # 4. Assign bins based on coordinates
         df = self._assign_bin_indices(df, coord_colnames)  # type: ignore[attr-defined]
