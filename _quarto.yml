@@ -9,8 +9,10 @@ website:
   title: "AKR 3D Map Documentation"
   navbar:
     left:
-      - text: "Home"
+      - text: "Documentation"
         href: index.qmd
+      - text: "Slides"
+        href: slides.qmd
 
 date-format: "MMMM D, YYYY"
 

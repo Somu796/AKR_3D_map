@@ -1,0 +1,52 @@
+---
+title: "AKR 3D Map"
+# subtitle: "Create beautiful interactive slide decks with Reveal.js"
+author:
+  - name: "Sudipta Kumar Hazra"
+    affiliations:
+      - name: "Dublin Institute for Advanced Studies (DIAS)"
+        department: "School of Astrophysics"
+  - name: "Alexandra Ruth Fogg"
+    affiliations:
+      - name: "Dublin Institute for Advanced Studies (DIAS)"
+        department: "School of Astrophysics"
+date: today
+date-format: "MMMM D, YYYY"
+format:
+  revealjs: 
+    slide-number: true
+    chalkboard: 
+      buttons: false
+    preview-links: auto
+    # logo: images/quarto.png
+    # css: styles.css
+---
+
+## Hello, There
+
+This presentation will show you examples of what you can do with Quarto and [Reveal.js](https://revealjs.com), including:
+
+-   Presenting code and LaTeX equations
+-   Including computations in slide output
+-   Image, video, and iframe backgrounds
+-   Fancy transitions and animations
+-   Activating scroll view
+
+...and much more
+
+## Pretty Code {auto-animate="true"}
+
+-   Over 20 syntax highlighting themes available
+-   Default theme optimized for accessibility
+
+``` r
+# Define a server for the Shiny app
+function(input, output) {
+  
+  # Fill in the spot we created for a plot
+  output$phonePlot <- renderPlot({
+    # Render a barplot
+  })
+}
+```
+
