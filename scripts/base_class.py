@@ -17,6 +17,7 @@ from scripts.utils import (
 from scripts.variables import (
     NumericType,
     PositiveNumber,
+    earth_image_path_str,
     n_coord_colnames,
     padding_grid,
 )
@@ -546,6 +547,7 @@ class AKRGrid(ABC, ObservationTimeCalculator):
         path: str = "3D_Objects/grid.html",
         *,
         show_earth: bool = True,
+        earth_image_path_str: str = earth_image_path_str,
         show_sun: bool = False,
     ) -> "AKRGrid":
         """
@@ -555,6 +557,7 @@ class AKRGrid(ABC, ObservationTimeCalculator):
             variable: Name of the variable to plot (optional)
             path: Path to save the HTML file (default: '3D_Objects/grid.html')
             show_earth: Whether to show Earth in the plot (default: True)
+            earth_image_path_str: Add path to the earth image
             show_sun: Whether to show Sun in the plot (default: False)
 
         Returns:
@@ -648,7 +651,12 @@ class AKRGrid(ABC, ObservationTimeCalculator):
 
         # 5. Add celestial bodies
         if self.plot_in_cartesian:
-            add_celestial_bodies(fig, show_earth=show_earth, show_sun=show_sun)
+            add_celestial_bodies(
+                fig,
+                show_earth=show_earth,
+                earth_image_path=earth_image_path_str,
+                show_sun=show_sun,
+            )
 
         # 6. Layout
         axis_labels = self._get_axis_labels()

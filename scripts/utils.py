@@ -121,16 +121,16 @@ def add_celestial_bodies(
     if show_earth:
         if Path(earth_image_path).exists():
             img = Image.open(earth_image_path).convert("RGB")
-            img = img.resize((400, 200))  # ✅ Keep high resolution
+            img = img.resize((400, 200))  # Keep high resolution
             img_data = np.array(img)
             intensity = np.mean(img_data, axis=2) / 255.0  # Shape: (200, 400)
 
             # Shadow mask - now matches!
-            shadow_mask = x_sphere  # Shape: (200, 400) ✅
+            shadow_mask = x_sphere  # Shape: (200, 400)
             shadow_mask = np.clip((shadow_mask * 10) + 0.5, 0.05, 1.0)
 
             # Now shapes match!
-            axis_fixed_intensity = intensity * shadow_mask  # (200, 400) * (200, 400) ✅
+            axis_fixed_intensity = intensity * shadow_mask  # (200, 400) * (200, 400)
 
             custom_earth_colors = [
                 [0.0, "rgb(0, 19, 30)"],

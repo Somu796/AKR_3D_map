@@ -73,7 +73,6 @@ sys.path.append(str(project_root))
 RAW_DATA_DIR = project_root / "data" / "raw"
 PROCESSED_DATA_DIR = project_root / "data" / "processed"
 ASSETS_DIR = project_root / "assets" / "3D_Objects"
-
 ```
 
 ## Data Ingestion & Pre-processing
@@ -199,6 +198,7 @@ cart = (
         variable="burst_count",
         path=plot_save_path,
         show_earth=True,
+        earth_image_path_str=f"{project_root}/assets/temp.jpg",
         show_sun=False,
     )
 )
@@ -247,6 +247,7 @@ ltrmat = (
         variable="burst_count",
         path=plot_save_path,
         show_earth=True,
+        earth_image_path_str=f"{project_root}/assets/temp.jpg",
         show_sun=False,
     )
 )
@@ -295,6 +296,7 @@ cart = (
         variable="observation_time",
         path=plot_save_path,
         show_earth=True,
+        earth_image_path_str=f"{project_root}/assets/temp.jpg",
         show_sun=False,
     )
 )
@@ -349,6 +351,7 @@ ltrmat = (
         variable="observation_time",
         path=plot_save_path,
         show_earth=True,
+        earth_image_path_str=f"{project_root}/assets/temp.jpg",
         show_sun=False,
     )
 )
@@ -399,6 +402,7 @@ cart = (
         variable="residence_time",
         path=plot_save_path,
         show_earth=True,
+        earth_image_path_str=f"{project_root}/assets/temp.jpg",
         show_sun=False,
     )
 )
@@ -447,6 +451,7 @@ ltrmat = (
         variable="residence_time",
         path=plot_save_path,
         show_earth=True,
+        earth_image_path_str=f"{project_root}/assets/temp.jpg",
         show_sun=False,
     )
 )
