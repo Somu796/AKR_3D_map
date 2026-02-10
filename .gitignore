@@ -18,7 +18,6 @@ notebooks/
 data_pipeline/
 _freeze/
 assets/3D_Objects/
-docs/
 
 # Specific files
 01_3Dvisualisation.ipynb
