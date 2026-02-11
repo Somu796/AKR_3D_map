@@ -100,7 +100,7 @@ Image source: @Morioka2011
 ## Development Roadmap {.smaller scrollable=false footer=false}
 ::: {.task-list}
 - [x] **Data Ingestion**: Standardised the AKR burst catalog processing pipeline.
-- [x] **3D Coordinate Framework**: Functions to generate spatial grids for x/y/z ($R_E$) (Cartesian) and MLT/Radial/Lat (Spherical) systems.
+- [x] **3D Coordinate Framework**: Functions to generate spatial grids for x/y/z ($R_E$) (Cartesian) and LT/Radial/Lat (Spherical) systems.
 - [ ] **AKR Feature Calculation**: generalised functions to calculate,
   - [x] Number of bursts
   - [x] Observation time
