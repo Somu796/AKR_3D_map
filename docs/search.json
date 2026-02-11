@@ -59,14 +59,70 @@
     "objectID": "slides.html#hello-there",
     "href": "slides.html#hello-there",
     "title": "AKR 3D Map",
-    "section": "",
-    "text": "This presentation will show you examples of what you can do with Quarto and Reveal.js, including:\n\nPresenting code and LaTeX equations\nIncluding computations in slide output\nImage, video, and iframe backgrounds\nFancy transitions and animations\nActivating scroll view\n\n…and much more"
+    "section": "Hello, There",
+    "text": "Hello, There\nThis presentation will show you examples of what you can do with Quarto and Reveal.js, including:\n\nPresenting code and LaTeX equations\nIncluding computations in slide output\nImage, video, and iframe backgrounds\nFancy transitions and animations\nActivating scroll view\n\n…and much more"
   },
   {
     "objectID": "slides.html#pretty-code",
     "href": "slides.html#pretty-code",
     "title": "AKR 3D Map",
     "section": "Pretty Code",
-    "text": "Pretty Code\n\nOver 20 syntax highlighting themes available\nDefault theme optimized for accessibility\n\n# Define a server for the Shiny app\nfunction(input, output) {\n  \n  # Fill in the spot we created for a plot\n  output$phonePlot &lt;- renderPlot({\n    # Render a barplot\n  })\n}"
+    "text": "Pretty Code\n\nOver 20 syntax highlighting themes available\nDefault theme optimized for accessibility\n\n# Define a server for the Shiny app\nfunction(input, output) {\n  \n  # Fill in the spot we created for a plot\n  output$phonePlot &lt;- renderPlot({\n    # Render a barplot\n  })\n}\n\n\n\n\nFogg, A. R., C. M. Jackman, J. E. Waters, X. Bonnin, L. Lamy, B. Cecconi, K. Issautier, and C. K. Louis. 2022. “Wind/WAVES Observations of Auroral Kilometric Radiation: Automated Burst Detection and Terrestrial Solar Wind - Magnetosphere Coupling Effects.” Journal of Geophysical Research: Space Physics 127 (5): e2021JA030209. https://doi.org/https://doi.org/10.1029/2021JA030209.\n\n\nMorioka, A., Y. Miyoshi, F. Tsuchiya, H. Misawa, Y. Kasaba, T. Asozu, S. Okano, et al. 2011. “On the Simultaneity of Substorm Onset Between Two Hemispheres.” Journal of Geophysical Research: Space Physics 116 (A4). https://doi.org/https://doi.org/10.1029/2010JA016174."
+  },
+  {
+    "objectID": "slides.html#introduction",
+    "href": "slides.html#introduction",
+    "title": "AKR 3D Map",
+    "section": "Introduction",
+    "text": "Introduction\n\n\n\n\nMorioka et al. (2011) defined the 2D boundaries of where AKR can be seen (illumination) vs. where it is blocked (shadow).\nFogg et al. (2022) isolated a decade of specific “burst” events from complex NASA Wind/WAVES radio data.\nOur Project integrates these datasets into a 3D Python tool, allowing users to predict AKR visibility from any point in space."
+  },
+  {
+    "objectID": "slides.html#scientific-tasks",
+    "href": "slides.html#scientific-tasks",
+    "title": "AKR 3D Map",
+    "section": "Scientific Tasks",
+    "text": "Scientific Tasks\nWe divided into small tasks:\n\n\nData Ingestion: Standardized the AKR burst catalog processing pipeline.\n3D Coordinate Framework: Generated spatial grids for \\(R_E\\) (Cartesian) and MLT/Radial/Lat (Spherical) systems.\nFeature Extraction:\n\nQuantitative metrics: Burst counts, Observation, and Residence time.\nStatistical normalization: Correcting for satellite dwell-time bias.\n\nHPC Scaling: Execute vectorized data processing on high-performance compute clusters.\nProbabilistic Modeling: Develop the predictive engine for 3D AKR visibility.\nInteroperability: Integrate TFCat standard support for cataloging and plotting.\nDeployment: Publish the akr_3d_map Python package and short technical paper.\n\n\n…and much more"
+  },
+  {
+    "objectID": "slides.html#development-roadmap",
+    "href": "slides.html#development-roadmap",
+    "title": "AKR 3D Map",
+    "section": "Development Roadmap",
+    "text": "Development Roadmap\n\n\nData Ingestion: Standardised the AKR burst catalog processing pipeline.\n3D Coordinate Framework: Functions to generate spatial grids for x/y/z (\\(R_E\\)) (Cartesian) and MLT/Radial/Lat (Spherical) systems.\nAKR Feature Calculation: generalised functions to calculate,\n\nNumber of bursts\nObservation time\nResidence time\nNormalised observation time\n\nHPC Scaling: Execute the function on complete dataset on high-performance compute clusters.\nProbabilistic Modeling: Develop the predictive engine for 3D AKR visibility.\nTFCat Support: Integrate standard support for processing TFCat file processing.\nDeployment: Publish the akr_3d_map Python package and short technical paper."
+  },
+  {
+    "objectID": "slides.html#how-the-code-work",
+    "href": "slides.html#how-the-code-work",
+    "title": "AKR 3D Map",
+    "section": "How the code work",
+    "text": "How the code work\n\n\nCartesian\n\nfrom akr_3d_map.grid_3d import Cartesian\n\n# 3. Performing analysis and generating plot\ncart = (\n    Cartesian()\n    .create_grid()\n    .add_burst_count(wind_data, coord_colnames=(\"x_gse\", \"y_gse\", \"z_gse\"))\n    .add_observation_time(wind_data, coord_colnames=(\"LT_gse\", \"radius\", \"lat_gse\"))\n    .add_residence_time(residence_data, coord_colnames=(\"x_gse\", \"y_gse\", \"z_gse\"))\n    .plot_3d(\n        variable=\"burst_count |residence_time | residence_time\",\n        path=\"plot_save_path\",\n        show_earth=True,\n        earth_image_path_str=\"/temp.jpg\",\n        show_sun=False,\n    )\n)\n\n\n\n\nLTRMlat\n\nfrom akr_3d_map.grid_3d import LTRMLat\n\n# 3. Performing analysis and generating plot\nltrmlat = (\n    LTRMLat()\n    .create_grid()\n    .add_burst_count(wind_data, coord_colnames=(\"x_gse\", \"y_gse\", \"z_gse\"))\n    .add_observation_time(wind_data, coord_colnames=(\"LT_gse\", \"radius\", \"lat_gse\"))\n    .add_residence_time(residence_data, coord_colnames=(\"x_gse\", \"y_gse\", \"z_gse\"))\n    .plot_3d(\n        variable=\"burst_count |residence_time | residence_time\",\n        path=\"plot_save_path\",\n        show_earth=True,\n        earth_image_path_str=\"/temp.jpg\",\n        show_sun=False,\n    )\n)"
+  },
+  {
+    "objectID": "slides.html#refrences",
+    "href": "slides.html#refrences",
+    "title": "AKR 3D Map",
+    "section": "Refrences",
+    "text": "Refrences\n\n\n\n\nFogg, A. R., C. M. Jackman, J. E. Waters, X. Bonnin, L. Lamy, B. Cecconi, K. Issautier, and C. K. Louis. 2022. “Wind/WAVES Observations of Auroral Kilometric Radiation: Automated Burst Detection and Terrestrial Solar Wind - Magnetosphere Coupling Effects.” Journal of Geophysical Research: Space Physics 127 (5): e2021JA030209. https://doi.org/https://doi.org/10.1029/2021JA030209.\n\n\nMorioka, A., Y. Miyoshi, F. Tsuchiya, H. Misawa, Y. Kasaba, T. Asozu, S. Okano, et al. 2011. “On the Simultaneity of Substorm Onset Between Two Hemispheres.” Journal of Geophysical Research: Space Physics 116 (A4). https://doi.org/https://doi.org/10.1029/2010JA016174."
+  },
+  {
+    "objectID": "slides.html#d-plots-for-burst-count",
+    "href": "slides.html#d-plots-for-burst-count",
+    "title": "AKR 3D Map",
+    "section": "3D Plots for Burst Count",
+    "text": "3D Plots for Burst Count"
+  },
+  {
+    "objectID": "slides.html#cartesian-3d-plots-for-burst-count",
+    "href": "slides.html#cartesian-3d-plots-for-burst-count",
+    "title": "AKR 3D Map",
+    "section": "Cartesian: 3D Plots for Burst Count",
+    "text": "Cartesian: 3D Plots for Burst Count"
+  },
+  {
+    "objectID": "slides.html#ltrmlat-3d-plots-for-burst-count",
+    "href": "slides.html#ltrmlat-3d-plots-for-burst-count",
+    "title": "AKR 3D Map",
+    "section": "LTRMlat: 3D Plots for Burst Count",
+    "text": "LTRMlat: 3D Plots for Burst Count"
   }
 ]
