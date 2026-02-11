@@ -70,7 +70,7 @@ class Cartesian(AKRGrid):
         return ("x", "y", "z")
 
     def get_coord_units(self) -> tuple[str, str, str]:
-        return ("R_E", "R_E", "R_E")
+        return ("R<sub>E</sub>", "R<sub>E</sub>", "R<sub>E</sub>")
 
     def get_grid_attrs(self) -> dict:
         return {
@@ -142,7 +142,7 @@ class LTRMLat(AKRGrid):
         return ("lt", "r", "mlat")
 
     def get_coord_units(self) -> tuple[str, str, str]:
-        return ("hours", "R_E", "degrees")
+        return ("hours", "R<sub>E</sub>", "degrees")
 
     def get_grid_attrs(self) -> dict:
         return {

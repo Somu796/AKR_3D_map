@@ -659,8 +659,11 @@ class AKRGrid(ABC, ObservationTimeCalculator):
             )
 
         # 6. Layout
-        axis_labels = self._get_axis_labels()
-        fig.update_layout(**get_3d_layout_config(title, axis_labels=axis_labels))
+        if self.plot_in_cartesian:
+            fig.update_layout(**get_3d_layout_config(title))
+        else:
+            axis_labels = self._get_axis_labels()
+            fig.update_layout(**get_3d_layout_config(title, axis_labels=axis_labels))
 
         # 7. Save plot
         save_plot(fig, path)
