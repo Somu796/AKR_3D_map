@@ -28,11 +28,11 @@ format:
     controls-tutorial: true # Highlights arrows for new viewers
     # logo: images/quarto.png
     css: style.css
+    footer: "Image credit: https://www.met.ie/education/the-northern-lights"
 title-slide-attributes:
   data-background-image: "assets/Aurora.jpg"
   data-background-size: cover
   data-background-opacity: "0.7"
-  data-footer: "Image credit: https://www.met.ie/education/the-northern-lights"
 bibliography: references.bib
 ---
 
@@ -71,7 +71,8 @@ def visualise_3D(plot_save_path):
         return f"File not found: {path}"
 ```
 
-## Introduction {.smaller}
+
+## Introduction {.smaller footer=false}
 
 <!-- Arrange content into columns of varying widths: @Morioka2011 [^1] -->
 
@@ -96,7 +97,7 @@ def visualise_3D(plot_save_path):
 Image source: @Morioka2011 
 :::
 
-## Development Roadmap {.smaller scrollable="false"}
+## Development Roadmap {.smaller scrollable=false footer=false}
 ::: {.task-list}
 - [x] **Data Ingestion**: Standardised the AKR burst catalog processing pipeline.
 - [x] **3D Coordinate Framework**: Functions to generate spatial grids for x/y/z ($R_E$) (Cartesian) and MLT/Radial/Lat (Spherical) systems.
@@ -111,7 +112,7 @@ Image source: @Morioka2011
 - [ ] **Deployment**: Publish the `akr_3d_map` Python package and short technical paper.
 :::
 
-## How the code work
+## How the code work {footer=false}
 ::: columns
 <!-- Column 1 -->
 ::: {.column width="48%"}
@@ -169,7 +170,7 @@ ltrmlat = (
 :::
 :::
 
-## Cartesian: 3D Plots for Burst Count
+## Cartesian: 3D Plots for Burst Count {footer=false}
 ```{python}
 # | echo: false
 # | eval: true
@@ -180,15 +181,15 @@ visualise_3D(
 )
 ```
 
-## LTRMlat: 3D Plots for Burst Count
+## LTRMlat: 3D Plots for Burst Count {footer=false}
 ```{python}
 # | echo: false
 # | eval: true
 visualise_3D(plot_save_path=f"{ASSETS_DIR}/LTRMlat_grid_with_burst_counts.json")
 ```
 
-## Other plots are at:
+## Other plots are at: {footer=false}
 [Documentation Page](https://somu796.github.io/AKR_3D_map/#burst-counts)
 
-## Refrences
+## Refrences {footer=false}
 

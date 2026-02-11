@@ -220,7 +220,7 @@
   <div class="reveal">
     <div class="slides">
 
-<section id="title-slide" data-background-image="assets/Aurora.jpg" data-background-opacity="0.7" data-background-size="cover" data-footer="Image credit: https://www.met.ie/education/the-northern-lights" class="quarto-title-block center">
+<section id="title-slide" data-background-image="assets/Aurora.jpg" data-background-opacity="0.7" data-background-size="cover" data-footer="" class="quarto-title-block center">
   <h1 class="title">AKR 3D Map</h1>
 
 <div class="quarto-title-authors">
@@ -244,7 +244,7 @@ Alexandra Ruth Fogg
 
   <p class="date">February 11, 2026</p>
 </section>
-<section id="introduction" class="slide level2 smaller">
+<section id="introduction" class="slide level2 smaller" data-footer="false">
 <h2>Introduction</h2>
 <!-- Arrange content into columns of varying widths: @Morioka2011 [^1] -->
 <div class="columns">
@@ -263,7 +263,7 @@ Alexandra Ruth Fogg
 <p>Image source: <span class="citation" data-cites="Morioka2011">Morioka et al. (<a href="#/refrences" role="doc-biblioref" onclick="">2011</a>)</span></p>
 </div>
 </section>
-<section id="development-roadmap" class="slide level2 smaller" data-scrollable="false">
+<section id="development-roadmap" class="slide level2 smaller" data-scrollable="false" data-footer="false">
 <h2>Development Roadmap</h2>
 <div class="task-list">
 <ul class="task-list">
@@ -283,7 +283,7 @@ Alexandra Ruth Fogg
 </ul>
 </div>
 </section>
-<section id="how-the-code-work" class="slide level2">
+<section id="how-the-code-work" class="slide level2" data-footer="false">
 <h2>How the code work</h2>
 <div class="columns">
 <!-- Column 1 --><div class="column" style="width:48%;">
@@ -332,7 +332,7 @@ Alexandra Ruth Fogg
 </div>
 </div></div>
 </section>
-<section id="cartesian-3d-plots-for-burst-count" class="slide level2">
+<section id="cartesian-3d-plots-for-burst-count" class="slide level2" data-footer="false">
 <h2>Cartesian: 3D Plots for Burst Count</h2>
 <div id="412a0f16" class="cell" data-execution_count="5">
 <div class="cell-output cell-output-display">
@@ -373,7 +373,7 @@ if (outputEl) {{
 </div>
 </div>
 </section>
-<section id="ltrmlat-3d-plots-for-burst-count" class="slide level2">
+<section id="ltrmlat-3d-plots-for-burst-count" class="slide level2" data-footer="false">
 <h2>LTRMlat: 3D Plots for Burst Count</h2>
 <div id="91af6667" class="cell" data-execution_count="6">
 <div class="cell-output cell-output-display">
@@ -406,11 +406,11 @@ if (outputEl) {{
 </div>
 </div>
 </section>
-<section id="other-plots-are-at" class="slide level2">
+<section id="other-plots-are-at" class="slide level2" data-footer="false">
 <h2>Other plots are at:</h2>
 <p><a href="https://somu796.github.io/AKR_3D_map/#burst-counts">Documentation Page</a></p>
 </section>
-<section id="refrences" class="slide level2 smaller scrollable">
+<section id="refrences" class="slide level2 smaller scrollable" data-footer="false">
 <h2>Refrences</h2>
 
 
@@ -426,7 +426,7 @@ Morioka, A., Y. Miyoshi, F. Tsuchiya, H. Misawa, Y. Kasaba, T. Asozu, S. Okano, 
     </div>
   <div class="quarto-auto-generated-content" style="display: none;">
 <div class="footer footer-default">
-
+<p>Image credit: https://www.met.ie/education/the-northern-lights</p>
 </div>
 </div></div>
 
@@ -639,65 +639,6 @@ Morioka, A., Y. Miyoshi, F. Tsuchiya, H. Misawa, Y. Kasaba, T. Asozu, S. Okano, 
           RevealZoom
         ]
       });
-    </script>
-    <!--
-
-    Source - https://stackoverflow.com/a/76505964
-
-    Posted by Shafee, modified by community. See post 'Timeline' for change history
-
-    Retrieved 2026-02-11, License - CC BY-SA 4.0
-
-    -->
-
-    
-
-    <script type="text/javascript" charset="utf-8">
-
-        function add_custom_footer() {
-
-            let title_slide = document.querySelector("section#title-slide");
-
-            let title_slide_footer = title_slide.getAttribute('data-footer');
-
-            let footer = document.querySelector('div.footer p');
-
-            let global_footer_text = footer.innerHTML;
-
-    
-
-            if (title_slide.classList.contains('present')) {
-
-                footer.innerHTML = title_slide_footer;
-
-            }
-
-    
-
-            Reveal.on('slidechanged', event => {
-
-                if (event.currentSlide.matches('#title-slide')) {
-
-                    footer.innerHTML = title_slide_footer;
-
-                } else {
-
-                    footer.innerHTML = global_footer_text;
-
-                }
-
-            });
-
-        };
-
-    
-
-        window.addEventListener("load", (event) => {
-
-            add_custom_footer();
-
-        });
-
     </script>
     <script id="quarto-html-after-body" type="application/javascript">
     window.document.addEventListener("DOMContentLoaded", function (event) {
