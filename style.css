@@ -2,3 +2,15 @@
     opacity: 0.4;
     /* Adjust 0.3-0.6 for desired dimness */
 }
+
+section#title-slide {
+    color: white !important;
+}
+
+section#title-slide .title,
+section#title-slide .subtitle,
+section#title-slide .author,
+section#title-slide .date,
+section#title-slide .footer {
+    color: white !important;
+}

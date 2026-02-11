@@ -74,7 +74,7 @@
     "href": "slides.html#introduction",
     "title": "AKR 3D Map",
     "section": "Introduction",
-    "text": "Introduction\n\n\n\n\nMorioka et al. (2011) defined the 2D boundaries of where AKR can be seen (illumination) vs. where it is blocked (shadow).\nFogg et al. (2022) isolated a decade of specific “burst” events from complex NASA Wind/WAVES radio data.\nOur Project integrates these datasets into a 3D Python tool, allowing users to predict AKR visibility from any point in space."
+    "text": "Introduction\n\n\n\n\n2D Foundation: Morioka et al. (2011) defined the geometric boundaries for AKR illumination and shadow zones in 2D space.\nAKR Burst Isolation: Fogg et al. (2022) extracted a decade of discrete AKR “burst” events from the NASA Wind/WAVES archives.\n3D Evolution: Our project integrates these into a 3D Python tool, enabling spatial mapping and AKR visibility analysis in 3D space.\n\n\n\n\n\n\n\nImage source: Morioka et al. (2011)"
   },
   {
     "objectID": "slides.html#scientific-tasks",
@@ -116,14 +116,14 @@
     "href": "slides.html#cartesian-3d-plots-for-burst-count",
     "title": "AKR 3D Map",
     "section": "Cartesian: 3D Plots for Burst Count",
-    "text": "Cartesian: 3D Plots for Burst Count\n\n\n'File not found: AKR_3D_Map\\\\3D_Objects\\\\cartesian_grid_with_burst_counts.json'"
+    "text": "Cartesian: 3D Plots for Burst Count"
   },
   {
     "objectID": "slides.html#ltrmlat-3d-plots-for-burst-count",
     "href": "slides.html#ltrmlat-3d-plots-for-burst-count",
     "title": "AKR 3D Map",
     "section": "LTRMlat: 3D Plots for Burst Count",
-    "text": "LTRMlat: 3D Plots for Burst Count\n\n\n'File not found: AKR_3D_Map\\\\assets\\\\3D_Objects\\\\LTRMlat_grid_with_burst_counts.json'"
+    "text": "LTRMlat: 3D Plots for Burst Count"
   },
   {
     "objectID": "slides.html#other-plots-are-at",

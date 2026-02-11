@@ -28,11 +28,14 @@ format:
     controls-tutorial: true # Highlights arrows for new viewers
     # logo: images/quarto.png
     css: style.css
+title-slide-attributes:
+  data-background-image: "assets/Aurora.jpg"
+  data-background-size: cover
+  data-background-opacity: "0.7"
+  data-footer: "Image credit: https://www.met.ie/education/the-northern-lights"
 bibliography: references.bib
-# filters:
-#   - quarto
-#   - line-highlight
 ---
+
 ```{python}
 # Need to be hidden
 # 1. Importing Libraries
@@ -89,7 +92,9 @@ def visualise_3D(plot_save_path):
 ![](assets/2D_plot.png)
 :::
 :::
-
+::: {.footer}
+Image source: @Morioka2011 
+:::
 
 ## Development Roadmap {.smaller scrollable="false"}
 ::: {.task-list}
