@@ -41,6 +41,20 @@ build-backend = "setuptools.build_meta"
 where = ["."]              # Look in project root
 include = ["scripts*"]     # Include the scripts package
 
+[tool.uv.workspace]
+members = [
+    ".",
+    ".",
+]
+
+[tool.uv.sources]
+akr-3d-map = { workspace = true, editable = true }
+
+[dependency-groups]
+dev = [
+    "akr-3d-map",
+]
+
 # Add dev dependencies
 [project.optional-dependencies]
 dev = [

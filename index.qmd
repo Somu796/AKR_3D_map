@@ -60,6 +60,7 @@ The goal is to quantify AKR activity by mapping discrete satellite data into a 3
 
 
 ## Project Environment Setup
+
 ```{python}
 # 1. Importing Libraries
 import sys
@@ -81,7 +82,7 @@ ASSETS_DIR = project_root / "assets" / "3D_Objects"
 ```{python}
 # | eval: false
 # 1. Importing functions from Package_Name
-from scripts.wind_data_reading import (
+from akr_3d_map.wind_data_reading import (
     exploding_saving_wind_data,
     load_apply_schema_wind_csv,
 )
@@ -126,7 +127,7 @@ print(f"Data successfully saved to: {PROCESSED_DATA_DIR}")
 # | eval: false
 
 # 1. library
-from scripts.wind_data_reading import vstack_residence_data
+from akr_3d_map.wind_data_reading import vstack_residence_data
 
 # 2. residence data in txt format for individual years
 target_path_obj = f"{RAW_DATA_DIR}/residence_data"
@@ -178,7 +179,7 @@ print("\n")
 ```{python}
 # | source-line-numbers: "5,16,19,27,28"
 # 1. Importing Cartesian class from Package_Name
-from scripts.grid_3d import Cartesian
+from akr_3d_map.grid_3d import Cartesian
 
 # 2. Path to save the file
 plot_save_path = f"{ASSETS_DIR}/cartesian_grid_with_burst_counts.json"
@@ -227,7 +228,7 @@ else:
 ```{python}
 # | source-line-numbers: "5,16,19,27,28"
 # 1. Importing Cartesian class from Package_Name
-from scripts.grid_3d import LTRMLat
+from akr_3d_map.grid_3d import LTRMLat
 
 # 2. Path to save the file
 plot_save_path = f"{ASSETS_DIR}/LTRMlat_grid_with_burst_counts.json"
@@ -276,7 +277,7 @@ else:
 ##### Calculating observation time and preaping plot file 
 ```{python}
 # 1. Importing Cartesian class from Package_Name
-from scripts.grid_3d import Cartesian
+from akr_3d_map.grid_3d import Cartesian
 
 # 2. Path to save the file
 plot_save_path = f"{ASSETS_DIR}/cartesian_grid_with_observation_time.json"
@@ -331,7 +332,7 @@ else:
 ```{python}
 # | source-line-numbers: "8-10"
 # 1. Importing Cartesian class from Package_Name
-from scripts.grid_3d import LTRMLat
+from akr_3d_map.grid_3d import LTRMLat
 
 # 2. Path to save the file
 plot_save_path = f"{ASSETS_DIR}/LTRMlat_grid_with_observation_time.json"
@@ -382,7 +383,7 @@ else:
 ```{python}
 # | source-line-numbers: "5,16,19,27,28"
 # 1. Importing Cartesian class from Package_Name
-from scripts.grid_3d import Cartesian
+from akr_3d_map.grid_3d import Cartesian
 
 # 2. Path to save the file
 plot_save_path = f"{ASSETS_DIR}/cartesian_grid_with_residence_data.json"
@@ -431,7 +432,7 @@ else:
 ```{python}
 # | source-line-numbers: "5,16,19,27,28"
 # 1. Importing Cartesian class from Package_Name
-from scripts.grid_3d import LTRMLat
+from akr_3d_map.grid_3d import LTRMLat
 
 # 2. Path to save the file
 plot_save_path = f"{ASSETS_DIR}/LTRMLat_grid_with_residence_data.json"
