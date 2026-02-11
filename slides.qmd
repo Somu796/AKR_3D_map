@@ -76,9 +76,10 @@ def visualise_3D(plot_save_path):
 <!-- Column 1 -->
 ::: {.column width="45%"}
 
-* **Morioka et al. [-@Morioka2011]** defined the 2D boundaries of where AKR can be seen (illumination) vs. where it is blocked (shadow).
-* **Fogg et al. [-@Fogg2022]** isolated a decade of specific "burst" events from complex NASA Wind/WAVES radio data.
-* **Our Project** integrates these datasets into a **3D Python tool**, allowing users to predict AKR visibility from any point in space.
+* **2D Foundation**: Morioka et al. [-@Morioka2011] defined the geometric boundaries for AKR illumination and shadow zones in 2D space.
+* **AKR Burst Isolation**: Fogg et al. [-@Fogg2022] extracted a decade of discrete AKR "burst" events from the NASA Wind/WAVES archives.
+* **3D Evolution**: Our project integrates these into a **3D Python tool**, enabling spatial mapping and AKR visibility analysis in 3D space.
+
 :::
 <!-- Gap -->
 ::: {.column width="3%"}
@@ -170,7 +171,7 @@ ltrmlat = (
 import plotly.io as pio
 
 visualise_3D(
-    plot_save_path="AKR_3D_Map/3D_Objects/cartesian_grid_with_burst_counts.json"
+    plot_save_path=f"{ASSETS_DIR}/cartesian_grid_with_burst_counts.json"
 )
 ```
 
@@ -178,9 +179,7 @@ visualise_3D(
 ```{python}
 # | echo: false
 # | eval: true
-visualise_3D(
-    plot_save_path="AKR_3D_Map/assets/3D_Objects/LTRMlat_grid_with_burst_counts.json"
-)
+visualise_3D(plot_save_path=f"{ASSETS_DIR}/LTRMlat_grid_with_burst_counts.json")
 ```
 
 ## Other plots are at:
