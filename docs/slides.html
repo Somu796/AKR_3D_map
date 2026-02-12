@@ -11,7 +11,7 @@
 
   <meta name="author" content="Sudipta Kumar Hazra">
   <meta name="author" content="Alexandra Ruth Fogg">
-  <meta name="dcterms.date" content="2026-02-11">
+  <meta name="dcterms.date" content="2026-02-12">
   <title>AKR 3D Map Documentation – AKR 3D Map</title>
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -212,6 +212,9 @@
       margin-right: 0; 
     }
   </style>
+  <script src="site_libs/quarto-diagram/mermaid.min.js"></script>
+  <script src="site_libs/quarto-diagram/mermaid-init.js"></script>
+  <link href="site_libs/quarto-diagram/mermaid.css" rel="stylesheet">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" integrity="sha512-c3Nl8+7g4LMSTdrm621y7kf9v3SDPnhxLNhcjFJbKECVnmZHTdo+IRO05sNLTH/D3vA6u1X32ehoLC7WFVdheg==" crossorigin="anonymous"></script>
   
   <script type="application/javascript">define('jquery', [],function() {return window.jQuery;})</script>
@@ -220,7 +223,7 @@
   <div class="reveal">
     <div class="slides">
 
-<section id="title-slide" data-background-image="assets/Aurora.jpg" data-background-opacity="0.7" data-background-size="cover" data-footer="" class="quarto-title-block center">
+<section id="title-slide" data-background-image="assets/Aurora.jpg" data-background-opacity="0.7" data-background-size="cover" class="quarto-title-block center">
   <h1 class="title">AKR 3D Map</h1>
 
 <div class="quarto-title-authors">
@@ -242,7 +245,7 @@ Alexandra Ruth Fogg
     </div>
 </div>
 
-  <p class="date">February 11, 2026</p>
+  <p class="date">February 12, 2026</p>
 </section>
 <section id="introduction" class="slide level2 smaller" data-footer="false">
 <h2>Introduction</h2>
@@ -268,7 +271,7 @@ Alexandra Ruth Fogg
 <div class="task-list">
 <ul class="task-list">
 <li><label><input type="checkbox" checked=""><strong>Data Ingestion</strong>: Standardised the AKR burst catalog processing pipeline.</label></li>
-<li><label><input type="checkbox" checked=""><strong>3D Coordinate Framework</strong>: Functions to generate spatial grids for x/y/z (<span class="math inline">\(R_E\)</span>) (Cartesian) and MLT/Radial/Lat (Spherical) systems.</label></li>
+<li><label><input type="checkbox" checked=""><strong>3D Coordinate Framework</strong>: Functions to generate spatial grids for x/y/z (<span class="math inline">\(R_E\)</span>) (Cartesian) and LT/Radial/Lat (Spherical) systems.</label></li>
 <li><label><input type="checkbox"><strong>AKR Feature Calculation</strong>: generalised functions to calculate,</label>
 <ul class="task-list">
 <li><label><input type="checkbox" checked="">Number of bursts</label></li>
@@ -331,6 +334,52 @@ Alexandra Ruth Fogg
 <span id="cb2-17"><a></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </div></div>
+</section>
+<section id="coding-architecture" class="slide level2">
+<h2>Coding architecture</h2>
+<div class="cell" data-reveal="true" data-layout-align="default">
+<div class="cell-output-display">
+<div>
+<p></p><figure class=""><p></p>
+<div>
+<pre class="mermaid mermaid-js">classDiagram
+    class AKRGrid {
+        &lt;&lt;Base&gt;&gt;
+        +data_source
+        +common_method()
+        +load_catalog()
+    }
+
+    class FeatureCalculations {
+        &lt;&lt;Mixin&gt;&gt;
+        +add_burst_counts()
+        +add_observation_time()
+        +add_residence_time()
+        
+    }
+
+    class Cartesian {
+        +x, y, z coordinates
+        +RE_units
+        +get_grid_terminology()
+    }
+
+    class LTRMLat {
+        +lt, radial, lat coordinates
+        +spherical_units
+        +get_grid_terminology()
+    }
+
+    %% Relationships
+    FeatureCalculations &lt;|-- AKRGrid : Inherits
+    AKRGrid &lt;|-- Cartesian : Inherits
+    AKRGrid &lt;|-- LTRMLat : Inherits
+</pre>
+</div>
+<p></p></figure><p></p>
+</div>
+</div>
+</div>
 </section>
 <section id="cartesian-3d-plots-for-burst-count" class="slide level2" data-footer="false">
 <h2>Cartesian: 3D Plots for Burst Count</h2>

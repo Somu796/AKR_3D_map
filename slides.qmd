@@ -170,6 +170,43 @@ ltrmlat = (
 :::
 :::
 
+## Coding architecture {footer=false}
+```{mermaid}
+%%{init: {'theme': 'base', 'themeVariables': { 'fontSize': '20px' }}}%%
+classDiagram
+    direction TB
+    class FeatureCalculations {
+        <<Mixin>>
+        +add_burst_counts()
+        +add_observation_time()
+        +add_residence_time()
+    }
+
+    class AKRGrid {
+        <<Base>>
+        +data_source
+        +common_method()
+        +load_catalog()
+    }
+
+    class Cartesian {
+        +x_y_z_coordinates
+        +RE_units
+        +get_grid_terminology()
+    }
+
+    class LTRMLat {
+        +lt_radial_lat_coordinates
+        +spherical_units
+        +get_grid_terminology()
+    }
+
+    %% Relationships
+    FeatureCalculations <|-- AKRGrid : Provides Features
+    AKRGrid <|-- Cartesian : 3D Cartesian Map
+    AKRGrid <|-- LTRMLat : 3D Spherical Map
+```
+
 ## Cartesian: 3D Plots for Burst Count {footer=false}
 ```{python}
 # | echo: false

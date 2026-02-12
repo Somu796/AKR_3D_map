@@ -88,7 +88,7 @@
     "href": "slides.html#development-roadmap",
     "title": "AKR 3D Map",
     "section": "Development Roadmap",
-    "text": "Development Roadmap\n\n\nData Ingestion: Standardised the AKR burst catalog processing pipeline.\n3D Coordinate Framework: Functions to generate spatial grids for x/y/z (\\(R_E\\)) (Cartesian) and MLT/Radial/Lat (Spherical) systems.\nAKR Feature Calculation: generalised functions to calculate,\n\nNumber of bursts\nObservation time\nResidence time\nNormalised observation time\n\nHPC Scaling: Execute the function on complete dataset on high-performance compute clusters.\nProbabilistic Modeling: Develop the predictive engine for 3D AKR visibility.\nTFCat Support: Integrate standard support for processing TFCat file processing.\nDeployment: Publish the akr_3d_map Python package and short technical paper."
+    "text": "Development Roadmap\n\n\nData Ingestion: Standardised the AKR burst catalog processing pipeline.\n3D Coordinate Framework: Functions to generate spatial grids for x/y/z (\\(R_E\\)) (Cartesian) and LT/Radial/Lat (Spherical) systems.\nAKR Feature Calculation: generalised functions to calculate,\n\nNumber of bursts\nObservation time\nResidence time\nNormalised observation time\n\nHPC Scaling: Execute the function on complete dataset on high-performance compute clusters.\nProbabilistic Modeling: Develop the predictive engine for 3D AKR visibility.\nTFCat Support: Integrate standard support for processing TFCat file processing.\nDeployment: Publish the akr_3d_map Python package and short technical paper."
   },
   {
     "objectID": "slides.html#how-the-code-work",
@@ -131,5 +131,19 @@
     "title": "AKR 3D Map",
     "section": "Other plots are at:",
     "text": "Other plots are at:\nDocumentation Page"
+  },
+  {
+    "objectID": "slides.html#coding-architecture",
+    "href": "slides.html#coding-architecture",
+    "title": "AKR 3D Map",
+    "section": "Coding architecture",
+    "text": "Coding architecture\n\n\n\n\n\nclassDiagram\n    class AKRGrid {\n        &lt;&lt;Base&gt;&gt;\n        +data_source\n        +common_method()\n        +load_catalog()\n    }\n\n    class FeatureCalculations {\n        &lt;&lt;Mixin&gt;&gt;\n        +add_burst_counts()\n        +add_observation_time()\n        +add_residence_time()\n        \n    }\n\n    class Cartesian {\n        +x, y, z coordinates\n        +RE_units\n        +get_grid_terminology()\n    }\n\n    class LTRMLat {\n        +lt, radial, lat coordinates\n        +spherical_units\n        +get_grid_terminology()\n    }\n\n    %% Relationships\n    FeatureCalculations &lt;|-- AKRGrid : Inherits\n    AKRGrid &lt;|-- Cartesian : Inherits\n    AKRGrid &lt;|-- LTRMLat : Inherits"
+  },
+  {
+    "objectID": "slides.html#tool-architecture-3d-mapping-logic",
+    "href": "slides.html#tool-architecture-3d-mapping-logic",
+    "title": "AKR 3D Map",
+    "section": "Tool Architecture: 3D Mapping Logic",
+    "text": "Tool Architecture: 3D Mapping Logic\n\n\n\n\n\nclassDiagram\n    class AKRGrid {\n        &lt;&lt;Base&gt;&gt;\n        +data_source\n        +common_method()\n        +load_catalog()\n    }\n\n    class FeatureMixin {\n        &lt;&lt;Mixin&gt;&gt;\n        +add_burst_counts()\n        +add_observation_time()\n        +add_residence_time()\n        \n    }\n\n    class Cartesian {\n        +x, y, z coordinates\n        +RE_units\n        +get_grid_terminology()\n    }\n\n    class LTRMLat {\n        +lt, radial, lat coordinates\n        +spherical_units\n        +get_grid_terminology()\n    }\n\n    %% Relationships\n    AKRGrid &lt;|-- Cartesian : Inherits\n    AKRGrid &lt;|-- LTRMLat : Inherits\n    FeatureMixin --* Cartesian : Injected\n    FeatureMixin --* LTRMLat : Injected"
   }
 ]
