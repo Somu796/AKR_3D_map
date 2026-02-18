@@ -549,6 +549,7 @@ class AKRGrid(ABC, ObservationTimeCalculator):
         show_earth: bool = True,
         earth_image_path_str: str = earth_image_path_str,
         show_sun: bool = False,
+        colorscale: str = "solar",
     ) -> "AKRGrid":
         """
         Plot 3D grid with wireframe (works for ALL coordinate systems).
@@ -559,6 +560,7 @@ class AKRGrid(ABC, ObservationTimeCalculator):
             show_earth: Whether to show Earth in the plot (default: True)
             earth_image_path_str: Add path to the earth image
             show_sun: Whether to show Sun in the plot (default: False)
+            colorscale: Choose appropriate color scale from plotly builtin color scales. documentation: https://plotly.com/python/builtin-colorscales/
 
         Returns:
             Self: for method chaining
@@ -631,7 +633,7 @@ class AKRGrid(ABC, ObservationTimeCalculator):
                         marker={
                             "size": 5,
                             "color": data_array[ii, jj, kk],
-                            "colorscale": "Viridis",
+                            "colorscale": colorscale,
                             "colorbar": {
                                 "title": display_label,
                                 "thickness": 15,

@@ -335,14 +335,23 @@ Alexandra Ruth Fogg
 </div>
 </div></div>
 </section>
-<section id="coding-architecture" class="slide level2">
+<section id="coding-architecture" class="slide level2" data-footer="false">
 <h2>Coding architecture</h2>
 <div class="cell" data-reveal="true" data-layout-align="default">
 <div class="cell-output-display">
 <div>
 <p></p><figure class=""><p></p>
 <div>
-<pre class="mermaid mermaid-js">classDiagram
+<pre class="mermaid mermaid-js">%%{init: {'theme': 'base', 'themeVariables': { 'fontSize': '20px' }}}%%
+classDiagram
+    direction TB
+    class FeatureCalculations {
+        &lt;&lt;Mixin&gt;&gt;
+        +add_burst_counts()
+        +add_observation_time()
+        +add_residence_time()
+    }
+
     class AKRGrid {
         &lt;&lt;Base&gt;&gt;
         +data_source
@@ -350,30 +359,22 @@ Alexandra Ruth Fogg
         +load_catalog()
     }
 
-    class FeatureCalculations {
-        &lt;&lt;Mixin&gt;&gt;
-        +add_burst_counts()
-        +add_observation_time()
-        +add_residence_time()
-        
-    }
-
     class Cartesian {
-        +x, y, z coordinates
+        +x_y_z_coordinates
         +RE_units
         +get_grid_terminology()
     }
 
     class LTRMLat {
-        +lt, radial, lat coordinates
+        +lt_radial_lat_coordinates
         +spherical_units
         +get_grid_terminology()
     }
 
     %% Relationships
-    FeatureCalculations &lt;|-- AKRGrid : Inherits
-    AKRGrid &lt;|-- Cartesian : Inherits
-    AKRGrid &lt;|-- LTRMLat : Inherits
+    FeatureCalculations &lt;|-- AKRGrid : Provides Features
+    AKRGrid &lt;|-- Cartesian : 3D Cartesian Map
+    AKRGrid &lt;|-- LTRMLat : 3D Spherical Map
 </pre>
 </div>
 <p></p></figure><p></p>
