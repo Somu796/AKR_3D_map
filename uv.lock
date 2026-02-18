@@ -15,7 +15,6 @@ source = { editable = "." }
 dependencies = [
     { name = "astropy" },
     { name = "datetime" },
-    { name = "ipykernel" },
     { name = "ipython" },
     { name = "jupyter" },
     { name = "jupyter-cache" },
@@ -56,7 +55,6 @@ dev = [
 requires-dist = [
     { name = "astropy", specifier = ">=7.2.0" },
     { name = "datetime", specifier = ">=6.0" },
-    { name = "ipykernel", specifier = ">=7.1.0" },
     { name = "ipython", specifier = ">=9.9.0" },
     { name = "jupyter", specifier = ">=1.1.1" },
     { name = "jupyter-cache", specifier = ">=1.0.1" },
