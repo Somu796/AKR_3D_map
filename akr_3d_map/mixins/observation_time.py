@@ -344,5 +344,14 @@ class ObservationTimeCalculator:
 
         return self  # type: ignore[return-value]
 
-
-# %%
+    # %%
+    # def add_normalised_observation_time(
+    #     self,
+    #     akr_df: pd.DataFrame,
+    #     satellite_residence_df: pd.DataFrame,
+    #     coord_colnames: tuple[str, str, str],
+    #     akr_timestamp_colname: str = "burst_timestamp",
+    #     residence_timestamp_colname: str = "time_stamp",
+    # ) -> Self:
+    #     """Write the docstring."""
+    #     pass
