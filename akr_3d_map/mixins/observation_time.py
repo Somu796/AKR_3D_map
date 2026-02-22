@@ -344,14 +344,85 @@ class ObservationTimeCalculator:
 
         return self  # type: ignore[return-value]
 
-    # %%
-    # def add_normalised_observation_time(
-    #     self,
-    #     akr_df: pd.DataFrame,
-    #     satellite_residence_df: pd.DataFrame,
-    #     coord_colnames: tuple[str, str, str],
-    #     akr_timestamp_colname: str = "burst_timestamp",
-    #     residence_timestamp_colname: str = "time_stamp",
-    # ) -> Self:
-    #     """Write the docstring."""
-    #     pass
+    def add_normalised_observation_time(
+        self,
+        akr_df: pd.DataFrame,
+        satellite_residence_df: pd.DataFrame,
+        coord_colnames: tuple[str, str, str],
+        akr_timestamp_colname: str = "burst_timestamp",
+        residence_timestamp_colname: str = "time_stamp",
+    ) -> Self:
+        """
+        Populate the grid with normalised observation time (Observation time / Residence time).
+
+        This accounts for sampling bias, a cell might have high AKR observation
+        time simply because the satellite spent a lot of time there. Normalisation
+        reveals the true activity rate.
+
+        Args:
+            akr_df: DataFrame with AKR burst events.
+            satellite_residence_df: DataFrame with full spacecraft trajectory.
+            coord_colnames: Column names for coordinates (coord1, coord2, coord3).
+            akr_timestamp_colname: Timestamp column for AKR data.
+            residence_timestamp_colname: Timestamp column for residence data.
+
+        Returns:
+            Self: for method chaining
+
+        """
+        # 1. Validations
+        grid = self._validate_and_get_grid()  # type: ignore[attr-defined]
+
+        # 2. Ensure Denominator (Residence Time) is populated
+        # We check if the residence_time array is effectively empty (all zeros)
+        if np.count_nonzero(grid.residence_time.data) == 0:
+            print(
+                "Residence time grid empty. Populating from satellite_residence_df...",
+            )
+            self.add_residence_time(
+                df=satellite_residence_df,
+                coord_colnames=coord_colnames,
+                timestamp_colname=residence_timestamp_colname,
+            )
+
+        # 3. Ensure Numerator (Observation Time) is populated
+        if np.count_nonzero(grid.observation_time.data) == 0:
+            print("Observation time grid empty. Populating from akr_df...")
+            self.add_observation_time(
+                df=akr_df,
+                coord_colnames=coord_colnames,
+                timestamp_colname=akr_timestamp_colname,
+            )
+
+        # 4. Perform Normalisation
+        # Strategy: Use np.divide with 'where' to avoid DivisionByZero errors
+        # in cells where the satellite never visited.
+
+        num = grid.observation_time.data
+        den = grid.residence_time.data
+
+        # normalized_obs_time = (Total AKR Time in bin) / (Total Spacecraft Time in bin)
+        norm_array = np.divide(
+            num,
+            den,
+            out=np.zeros_like(num, dtype=float),
+            where=den != 0,
+        )
+
+        # 5. Update the internal xarray data directly
+        # Assuming your grid object has a .normalised_observation_time data variable
+        grid.normalised_observation_time.data = norm_array
+
+        # Apply a physical constraint (normalised time cannot exceed 1.0)
+        grid.normalised_observation_time.data = np.clip(
+            grid.normalised_observation_time.data,
+            0,
+            1,
+        )
+
+        print(
+            f"Normalistion complete. Activity rates calculated for "
+            f"{np.count_nonzero(norm_array)} active grid cells.",
+        )
+
+        return self  # type: ignore[return-value]
