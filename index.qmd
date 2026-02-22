@@ -253,7 +253,7 @@ ltrmat = (
     )
 )
 
-# 4. Validation: Total time should be > 0
+# 4. Validation: Total time should be > 0.
 total_burst_count = ltrmat.grid.burst_count.sum().item()
 print(f"Total observations time logged: {(total_burst_count):.1f} seconds")
 ```
