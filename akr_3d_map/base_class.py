@@ -577,7 +577,7 @@ class AKRGrid(ABC, ObservationTimeCalculator):
         self._add_wireframe(fig, grid)
 
         # 4. Add Data Layer (Only if a variable is specified and exists)
-        if variable and variable in grid:
+        if variable and variable in grid:  # TODO(@Somu796)-01
             data_array = grid[variable].to_numpy()
             ii, jj, kk = np.where(data_array > 0)
 

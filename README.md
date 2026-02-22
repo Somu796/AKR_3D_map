@@ -65,20 +65,15 @@ Akr3Map_project/
 │   ├── raw/                    # Original fogg_akr_burst_list CSV
 │   └── processed/              # Cleaned Parquet files
 ├── 3D_Objects/                 # Output folder for .html and .json plots
-├── scripts/
+├── akr_3d_map/
 │   ├── __init__.py             # Makes scripts a package
+|   ├── mixins
+|       ├── __init__.py
+|       └── observation_time.py # Calculate all the features
 │   ├── grid_3d.py              # Cartesian and LTRMLat classes
-│   ├── residence.py            # Residence time & interval calculations
+│   ├── base_class.py           # Contain all the common classes
+│   ├── wind_data_reading.py    # Perform all the data processing
 │   └── utils.py                # Binning, plotting, and type definitions
 ├── main.py                     # Your primary execution script
 └── pyproject.toml              # (Optional) For project dependencies
 ```
-
-# To be done
-
-1. Colorscale, need to be better.
-2. Earth 3D image failed to add.
-3. Also better to add the orbit of the satellite. To see better.
-4. Camera angle should be better.
-5. Add data layer as function so can be performed for many variables then name, and color need to be checked.
-6. Make Quarto slides and make multipage website
