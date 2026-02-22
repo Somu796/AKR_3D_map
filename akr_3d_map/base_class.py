@@ -549,7 +549,7 @@ class AKRGrid(ABC, ObservationTimeCalculator):
         show_earth: bool = True,
         earth_image_path_str: str = earth_image_path_str,
         show_sun: bool = False,
-        colorscale: str = "solar",
+        colorscale: str = "Cividis",
     ) -> "AKRGrid":
         """
         Plot 3D grid with wireframe (works for ALL coordinate systems).
