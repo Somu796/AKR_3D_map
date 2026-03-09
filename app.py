@@ -1,3 +1,4 @@
+# %% Plotting on Complete Data
 import sys
 from pathlib import Path
 
@@ -137,5 +138,9 @@ def main() -> None:
     print("--- Job Completed Successfully ---")
 
 
+# %% Modeling
+
+
+# %% Main section
 if __name__ == "__main__":
     main()

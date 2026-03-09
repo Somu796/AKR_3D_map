@@ -14,10 +14,10 @@ documents/
 data/raw/
 data/processed/01_processed_wind_data_fogg_akr_burst_list_1995_2004.json
 learning/
-notebooks/
+# notebooks/
 data_pipeline/
 _freeze/
-# assets/3D_Objects/
+assets/3D_Objects_01/
 
 # Specific files
 01_3Dvisualisation.ipynb
