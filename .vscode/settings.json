@@ -1,5 +1,14 @@
 {
     "cSpell.words": [
-        "ltrmat"
+        "ELBO",
+        "gpflow",
+        "hovermode",
+        "hovertemplate",
+        "lengthscales",
+        "ltrmat",
+        "Matern",
+        "minibatch",
+        "minibatches",
+        "SVGP"
     ]
 }
