@@ -1,3 +1,6 @@
+import os
+os.environ["TF_USE_LEGACY_KERAS"] = "1"
+
 # %% 1. Importing Libraries
 import sys
 import typing
@@ -11,11 +14,12 @@ import plotly.graph_objects as go
 import tensorflow as tf
 from gpflow.utilities import print_summary
 from sklearn.preprocessing import StandardScaler
+import tf_keras as keras
 
 # %% 2. Setting up Environment
 
 # 2. Setting project paths
-project_root = Path.cwd().parents[0]
+project_root = Path.cwd()
 sys.path.append(str(project_root))
 
 # Define standard data subdirectories for easy access later
