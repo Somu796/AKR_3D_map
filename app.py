@@ -135,10 +135,10 @@ def main() -> None:
         show_sun=False,
     )
 
+    # Saving the Data
+    cart.save_grid(path=f"{ASSETS_DIR}/cart_akr_grid.parquet", fmt="parquet")
+    ltrmat.save_grid(path=f"{ASSETS_DIR}/cart_akr_grid.parquet", fmt="parquet")
     print("--- Job Completed Successfully ---")
-
-
-# %% Modeling
 
 
 # %% Main section
