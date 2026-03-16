@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
+from pathlib import Path
 from typing import Any, ClassVar
 
 import numpy as np
@@ -672,3 +673,44 @@ class AKRGrid(ABC, ObservationTimeCalculator):
 
         self.fig = fig
         return self
+
+    def save_grid(self, path: str = "./akr_grid.parquet", fmt: str = "parquet") -> str:
+        """
+        Saves the xarray Dataset to a specified format and path.
+
+        Args:
+            path: path directory where to save the file
+            fmt: what format to save the file, e.g. parquet (default), netcdf, zarr
+
+        """
+        grid = self._validate_and_get_grid()  # type: ignore[attr-defined]
+        # 1. Ask for format if not provided
+        valid_formats = {"netcdf": ".nc", "zarr": ".zarr", "parquet": ".parquet"}
+
+        if fmt not in valid_formats:
+            error_message = (
+                f"Unsupported format: {fmt}. Use {list(valid_formats.keys())}",
+            )
+            raise ValueError(error_message)
+
+        # Ensure path has the correct extension if only a directory or base name is provided
+        target_path = Path(path)
+        if target_path.suffix != valid_formats[fmt]:
+            target_path = target_path.with_suffix(valid_formats[fmt])
+
+        # Logic for different formats
+        if fmt == "parquet":
+            cols_to_drop = [c for c in grid.coords if "_edges" in str(c)]
+            # We use 'ordered' to ensure the coordinate columns stay in X, Y, Z order
+            df_flat = grid.drop_vars(cols_to_drop).to_dataframe().reset_index()
+            df_flat.to_parquet(target_path, index=False)
+
+        elif fmt == "netcdf":
+            grid.to_netcdf(target_path)
+
+        elif fmt == "zarr":
+            # consolidated=True is best practice for HPC/Cloud datasets
+            grid.to_zarr(target_path, mode="w", consolidated=True)
+
+        print(f"Successfully saved grid to {target_path} as {fmt}")
+        return str(target_path)
