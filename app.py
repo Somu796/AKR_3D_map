@@ -80,7 +80,7 @@ def main() -> None:
     #     show_sun=False,
     # )
 
-    ltrmat = (
+    ltrmlat = (
         # Provide bin size for the 3D plot
         LTRMLat()
         # In case you are not sure about the extreme points
@@ -106,28 +106,28 @@ def main() -> None:
         )
     )
 
-    # ltrmat.plot_3d(
+    # ltrmlat.plot_3d(
     #     variable="burst_count",
     #     path=f"{ASSETS_DIR}/01_ltrmat_grid_with_burst_counts.json",
     #     show_earth=True,
     #     earth_image_path_str=f"{project_root}/assets/temp.jpg",
     #     show_sun=False,
     # )
-    # ltrmat.plot_3d(
+    # ltrmlat.plot_3d(
     #     variable="observation_time",
     #     path=f"{ASSETS_DIR}/02_ltrmat_grid_with_observation_time.json",
     #     show_earth=True,
     #     earth_image_path_str=f"{project_root}/assets/temp.jpg",
     #     show_sun=False,
     # )
-    # ltrmat.plot_3d(
+    # ltrmlat.plot_3d(
     #     variable="residence_time",
     #     path=f"{ASSETS_DIR}/03_ltrmat_grid_with_residence_time.json",
     #     show_earth=True,
     #     earth_image_path_str=f"{project_root}/assets/temp.jpg",
     #     show_sun=False,
     # )
-    # ltrmat.plot_3d(
+    # ltrmlat.plot_3d(
     #     variable="normalised_observation_time",
     #     path=f"{ASSETS_DIR}/04_ltrmat_grid_with_normalised_observation_time.json",
     #     show_earth=True,
@@ -137,7 +137,7 @@ def main() -> None:
 
     # Saving the Data
     cart.save_grid(path=f"{ASSETS_DIR}/cart_akr_grid.parquet", fmt="parquet")
-    ltrmat.save_grid(path=f"{ASSETS_DIR}/cart_akr_grid.parquet", fmt="parquet")
+    ltrmlat.save_grid(path=f"{ASSETS_DIR}/ltrmlat_akr_grid.parquet", fmt="parquet")
     print("--- Job Completed Successfully ---")
 
 
