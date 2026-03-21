@@ -47,16 +47,19 @@ def main() -> None:
             timestamp_colname="burst_timestamp",
             coord_colnames=("x_gse", "y_gse", "z_gse"),
         )
+        .add_observation_count(
+            wind_data,
+            coord_colnames=("x_gse", "y_gse", "z_gse"),
+        )
         # Calculate residence time given wind satellite data
         .add_residence_time(
             residence_data,
             timestamp_colname="time_stamp",
             coord_colnames=("x_gse", "y_gse", "z_gse"),
         )
-        .add_residence_burst_count(
-            df=wind_data,
+        .add_residence_count(
+            df=residence_data,
             coord_colnames=("x_gse", "y_gse", "z_gse"),
-            akr_burst_id_colname="original_burst_id",  # Optional: defaults to "burst_id"
             residence_timestamp_colname="time_stamp",
             gap_hours=2,  # Optional: defaults to 2
         )

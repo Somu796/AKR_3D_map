@@ -72,126 +72,6 @@ class ObservationTimeCalculator:
 
         return df
 
-    # def add_burst_count(
-    #     self,
-    #     df: pd.DataFrame,
-    #     coord_colnames: tuple[str, str, str],
-    # ) -> Self:
-    #     """
-    #     Calculate time intervals and populate the grid with observation time.
-
-    #     Args:
-    #         df: DataFrame with position and timestamp data
-    #         coord_colnames: Column names for coordinates (coord1, coord2, coord3)
-
-    #     Returns:
-    #         Self: for method chaining
-
-    #     Example:
-    #         >>> cart.add_burst_count(
-    #         df=wind_data,
-    #         coord_colnames=("x_gse", "y_gse", "z_gse"),
-    #         )
-    #         >>> burst_count_data = cart.grid.burst_count  # Access the populated grid
-
-    #     """
-    #     # 1. Validations
-    #     # validate and return grid, type check safe
-    #     grid = self._validate_and_get_grid()  # type: ignore[attr-defined]
-    #     # validate coord colnames exists in given dataframe
-    #     self._validate_coord_colnames(df, coord_colnames)  # type: ignore[attr-defined]
-
-    #     # 2. Importing dimension for the specific child class
-    #     dim_names = self.get_dimension_names()  # type: ignore[attr-defined]
-
-    #     # 4. Assign bins
-    #     df = self._assign_bin_indices(df, coord_colnames)  # type: ignore[attr-defined]
-
-    #     # 5. Filter only data within grid boundaries
-    #     in_grid = (
-    #         (df[f"bin_{dim_names[0]}"] >= 0)
-    #         & (df[f"bin_{dim_names[1]}"] >= 0)
-    #         & (df[f"bin_{dim_names[2]}"] >= 0)
-    #     )
-    #     df_in_grid = df[in_grid]
-
-    #     # 6. Group by bin indices and sum intervals
-    #     grouped = df_in_grid.groupby(
-    #         [f"bin_{dim_names[0]}", f"bin_{dim_names[1]}", f"bin_{dim_names[2]}"],
-    #     )[burst_id_colname].nunique()
-
-    #     # 7. Update the internal xarray data directly
-    #     obs_array: np.ndarray = grid.burst_count.data
-
-    #     for iteration, (idx, n_bursts) in enumerate(grouped.items()):
-    #         i, j, k = cast("tuple[int, int, int]", idx)
-    #         obs_array[int(i), int(j), int(k)] += n_bursts
-
-    #         if iteration % 500 == 0:
-    #             print(f"Update in progress... processed {iteration} bins.")
-
-    #     print(f"Grid populated: {np.count_nonzero(obs_array)} bins updated.")
-
-    #     return self  # type: ignore[return-value]
-
-    def add_residence_burst_count(
-        self,
-        df: pd.DataFrame,
-        coord_colnames: tuple[str, str, str],
-        akr_burst_id_colname: str = burst_id_colname,
-        residence_timestamp_colname: str = "time_stamp",
-        gap_hours: int = 2,
-    ) -> Self:
-        """Populates both 'residence_count' (passes) and 'burst_count' (events populated every grid) to validate statistical significance."""
-        # 1. Validations
-        grid = self._validate_and_get_grid()  # type: ignore[attr-defined]
-        self._validate_coord_colnames(df, coord_colnames)  # type: ignore[attr-defined]
-        dim_names = self.get_dimension_names()  # type: ignore[attr-defined]
-
-        # 2. Setup Pass ID (The "Once or Twice" Logic)
-        # Sort by time to ensure gap detection works
-        df = df.sort_values(residence_timestamp_colname).copy()
-        df[residence_timestamp_colname] = pd.to_datetime(
-            df[residence_timestamp_colname],
-        )
-        df["new_pass"] = df[residence_timestamp_colname].diff() > pd.Timedelta(
-            hours=gap_hours,
-        )
-        df["pass_id"] = df["new_pass"].cumsum()
-
-        # 3. Assign Bins
-        df = self._assign_bin_indices(df, coord_colnames)  # type: ignore[attr-defined]
-
-        # 4. Filter for In-Grid Data
-        bin_cols = [f"bin_{name}" for name in dim_names]
-        in_grid = (df[bin_cols] >= 0).all(axis=1)
-        df_in_grid = df[in_grid]
-
-        # 5. Group by bins and calculate UNIQUE counts for both
-        # We use a dictionary to perform two aggregations at once
-        stats = df_in_grid.groupby(bin_cols).agg(
-            unique_passes=("pass_id", "nunique"),
-            unique_bursts=(akr_burst_id_colname, "nunique"),
-        )
-
-        # 6. Update the Xarray Data Arrays
-        # Pulling references to the numpy buffers
-        res_count_array: np.ndarray = grid.residence_count.data
-        burst_count_array: np.ndarray = grid.burst_count_old.data
-
-        for iteration, (idx, row) in enumerate(stats.iterrows()):
-            # idx is (bin_0, bin_1, bin_2)
-            i, j, k = map(int, cast(tuple, idx))
-
-            res_count_array[i, j, k] += int(row["unique_passes"])
-            burst_count_array[i, j, k] += int(row["unique_bursts"])
-
-            if iteration % 1000 == 0:
-                print(f"Sampling Update: Processed {iteration} active bins...")
-
-        print(f"Success: {np.count_nonzero(res_count_array)} bins updated.")
-        return self  # type: ignore[return-value]
-
     def add_burst_count(
         self,
         df: pd.DataFrame,
@@ -263,6 +143,161 @@ class ObservationTimeCalculator:
 
         print(f"Grid populated: {np.count_nonzero(obs_array)} bins updated.")
         return self  # type: ignore[return-value]
+
+    def add_observation_count(
+        self,
+        df: pd.DataFrame,
+        coord_colnames: tuple[str, str, str],
+    ) -> Self:
+        """Populate the grid by adding 1 for every row in the dataframe to its corresponding 3D bin."""
+        # 1. Validations
+        grid = self._validate_and_get_grid()  # type: ignore[attr-defined]
+        self._validate_coord_colnames(df, coord_colnames)  # type: ignore[attr-defined]
+        dim_names = self.get_dimension_names()  # type: ignore[attr-defined]
+
+        # 2. Assign bins to EVERY row (No grouping or filtering here)
+        df_binned = self._assign_bin_indices(df, coord_colnames)  # type: ignore[attr-defined]
+
+        # 3. Filter only data within grid boundaries
+        bin_cols = [f"bin_{dim_names[0]}", f"bin_{dim_names[1]}", f"bin_{dim_names[2]}"]
+        in_grid = (df_binned[bin_cols] >= 0).all(axis=1)
+        df_in_grid = df_binned[in_grid]
+
+        # 4. Group by bin indices and count the number of rows (.size())
+        # Each row in the group represents +1 for that bin
+        grouped = df_in_grid.groupby(bin_cols).size()
+
+        # 5. Update the internal xarray data directly
+        # Ensure 'observation_count' exists in your grid data_vars
+        obs_array: np.ndarray = grid.observation_count.data
+
+        for iteration, (idx, count) in enumerate(grouped.items()):
+            # idx is (i, j, k)
+            i, j, k = map(int, cast(tuple, idx))
+
+            # Add the count (number of rows) to the existing value in the bin
+            obs_array[i, j, k] += int(count)
+
+            if iteration % 1000 == 0:
+                print(f"Update in progress... processed {iteration} active bins.")
+
+        print(f"Grid populated: {np.count_nonzero(obs_array)} bins updated.")
+        return self  # type: ignore[return-value]
+
+    # def add_burst_count(
+    #     self,
+    #     df: pd.DataFrame,
+    #     coord_colnames: tuple[str, str, str],
+    # ) -> Self:
+    #     """
+    #     Same as burst count, only logic different is this it adds up 1 for all the grid not only first grid.
+
+    #     Args:
+    #         df: DataFrame with position and timestamp data
+    #         coord_colnames: Column names for coordinates (coord1, coord2, coord3)
+
+    #     Returns:
+    #         Self: for method chaining
+
+    #     Example:
+    #         >>> cart.add_burst_count(
+    #         df=wind_data,
+    #         coord_colnames=("x_gse", "y_gse", "z_gse"),
+    #         )
+    #         >>> burst_count_data = cart.grid.burst_count  # Access the populated grid
+
+    #     """
+    #     # 1. Validations
+    #     # validate and return grid, type check safe
+    #     grid = self._validate_and_get_grid()  # type: ignore[attr-defined]
+    #     # validate coord colnames exists in given dataframe
+    #     self._validate_coord_colnames(df, coord_colnames)  # type: ignore[attr-defined]
+
+    #     # 2. Importing dimension for the specific child class
+    #     dim_names = self.get_dimension_names()  # type: ignore[attr-defined]
+
+    #     # 4. Assign bins
+    #     df = self._assign_bin_indices(df, coord_colnames)  # type: ignore[attr-defined]
+
+    #     # 5. Filter only data within grid boundaries
+    #     in_grid = (
+    #         (df[f"bin_{dim_names[0]}"] >= 0)
+    #         & (df[f"bin_{dim_names[1]}"] >= 0)
+    #         & (df[f"bin_{dim_names[2]}"] >= 0)
+    #     )
+    #     df_in_grid = df[in_grid]
+
+    #     # 6. Group by bin indices and sum intervals
+    #     grouped = df_in_grid.groupby(
+    #         [f"bin_{dim_names[0]}", f"bin_{dim_names[1]}", f"bin_{dim_names[2]}"],
+    #     )[burst_id_colname].nunique()
+
+    #     # 7. Update the internal xarray data directly
+    #     obs_array: np.ndarray = grid.observation_count.data
+
+    #     for iteration, (idx, n_bursts) in enumerate(grouped.items()):
+    #         i, j, k = cast("tuple[int, int, int]", idx)
+    #         obs_array[int(i), int(j), int(k)] += n_bursts
+
+    #         if iteration % 500 == 0:
+    #             print(f"Update in progress... processed {iteration} bins.")
+
+    #     print(f"Grid populated: {np.count_nonzero(obs_array)} bins updated.")
+
+    #     return self  # type: ignore[return-value]
+
+    def add_residence_count(
+        self,
+        df: pd.DataFrame,
+        coord_colnames: tuple[str, str, str],
+        residence_timestamp_colname: str = "time_stamp",
+        gap_hours: int = 2,
+    ) -> Self:
+        """Populates 'residence_count' in the grid by identifying unique spacecraft passes based on time gaps in the residence data."""
+        # 1. Validations
+        grid = self._validate_and_get_grid()  # type: ignore[attr-defined]
+        self._validate_coord_colnames(df, coord_colnames)  # type: ignore[attr-defined]
+        dim_names = self.get_dimension_names()  # type: ignore[attr-defined]
+
+        # 2. Setup Pass ID (The "Once or Twice" Logic)
+        # We must sort to detect gaps between consecutive chronological points
+        df = df.sort_values(residence_timestamp_colname).copy()
+        df[residence_timestamp_colname] = pd.to_datetime(
+            df[residence_timestamp_colname]
+        )
+
+        # Mark a new pass if the gap between points is larger than threshold
+        df["new_pass"] = df[residence_timestamp_colname].diff() > pd.Timedelta(
+            hours=gap_hours
+        )
+        df["pass_id"] = df["new_pass"].cumsum()
+
+        # 3. Assign Bins
+        df = self._assign_bin_indices(df, coord_colnames)  # type: ignore[attr-defined]
+
+        # 4. Filter for In-Grid Data
+        bin_cols = [f"bin_{name}" for name in dim_names]
+        in_grid = (df[bin_cols] >= 0).all(axis=1)
+        df_in_grid = df[in_grid]
+
+        # 5. Group by bins and count UNIQUE pass_ids
+        grouped = df_in_grid.groupby(bin_cols)["pass_id"].nunique()
+
+        # 6. Update the Xarray Data Array
+        res_count_array: np.ndarray = grid.residence_count.data
+
+        for iteration, (idx, n_passes) in enumerate(grouped.items()):
+            # idx is (bin_0, bin_1, bin_2)
+            i, j, k = map(int, cast(tuple, idx))
+            res_count_array[i, j, k] += int(n_passes)
+
+            if iteration % 1000 == 0:
+                print(f"Residence Update: Processed {iteration} bins...")
+
+        print(
+            f"Success: {np.count_nonzero(res_count_array)} bins updated with pass counts."
+        )
+        return self  # type: ignore[return-value]  # type: ignore[return-value]
 
     def add_observation_time(
         self,

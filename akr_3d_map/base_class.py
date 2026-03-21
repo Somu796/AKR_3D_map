@@ -318,7 +318,7 @@ class AKRGrid(ABC, ObservationTimeCalculator):
                 np.zeros(shape, dtype=np.int32),
                 {"units": "count", "dtype": "int32"},
             ),
-            "burst_count_old": (
+            "observation_count": (
                 list(dim_names),
                 np.zeros(shape, dtype=np.int32),
                 {"units": "count", "dtype": "int32"},
