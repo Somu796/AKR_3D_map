@@ -36,15 +36,28 @@ def main() -> None:
         # Create grid points
         .create_grid()
         # Calculate burst count given wind satellite data
-        .add_burst_count(wind_data, coord_colnames=("x_gse", "y_gse", "z_gse"))
+        .add_burst_count(
+            wind_data,
+            burst_id_colname="original_burst_id",
+            coord_colnames=("x_gse", "y_gse", "z_gse"),
+        )
         # Calculate observations time given wind satellite data
-        .add_observation_time(wind_data, coord_colnames=("x_gse", "y_gse", "z_gse"))
+        .add_observation_time(
+            wind_data,
+            timestamp_colname="burst_timestamp",
+            coord_colnames=("x_gse", "y_gse", "z_gse"),
+        )
         # Calculate residence time given wind satellite data
-        .add_residence_time(residence_data, coord_colnames=("x_gse", "y_gse", "z_gse"))
+        .add_residence_time(
+            residence_data,
+            timestamp_colname="time_stamp",
+            coord_colnames=("x_gse", "y_gse", "z_gse"),
+        )
         .add_residence_burst_count(
             df=wind_data,
             coord_colnames=("x_gse", "y_gse", "z_gse"),
-            burst_id_colname="burst_id",  # Optional: defaults to "burst_id"
+            akr_burst_id_colname="original_burst_id",  # Optional: defaults to "burst_id"
+            residence_timestamp_colname="time_stamp",
             gap_hours=2,  # Optional: defaults to 2
         )
         # Calculate normalised observation time given wind satellite data
@@ -52,7 +65,7 @@ def main() -> None:
             akr_df=wind_data,
             satellite_residence_df=residence_data,
             coord_colnames=("x_gse", "y_gse", "z_gse"),
-            akr_timestamp_colname="original_burst_id",
+            akr_timestamp_colname="burst_timestamp",
             residence_timestamp_colname="time_stamp",
         )
     )

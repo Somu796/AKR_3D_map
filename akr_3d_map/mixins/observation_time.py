@@ -138,7 +138,8 @@ class ObservationTimeCalculator:
         self,
         df: pd.DataFrame,
         coord_colnames: tuple[str, str, str],
-        burst_id_colname: str = "burst_id",
+        akr_burst_id_colname: str = burst_id_colname,
+        residence_timestamp_colname: str = "time_stamp",
         gap_hours: int = 2,
     ) -> Self:
         """Populates both 'residence_count' (passes) and 'burst_count' (events populated every grid) to validate statistical significance."""
@@ -149,9 +150,13 @@ class ObservationTimeCalculator:
 
         # 2. Setup Pass ID (The "Once or Twice" Logic)
         # Sort by time to ensure gap detection works
-        df = df.sort_values("time_stamp").copy()
-        df["time_stamp"] = pd.to_datetime(df["time_stamp"])
-        df["new_pass"] = df["time_stamp"].diff() > pd.Timedelta(hours=gap_hours)
+        df = df.sort_values(residence_timestamp_colname).copy()
+        df[residence_timestamp_colname] = pd.to_datetime(
+            df[residence_timestamp_colname],
+        )
+        df["new_pass"] = df[residence_timestamp_colname].diff() > pd.Timedelta(
+            hours=gap_hours,
+        )
         df["pass_id"] = df["new_pass"].cumsum()
 
         # 3. Assign Bins
@@ -166,7 +171,7 @@ class ObservationTimeCalculator:
         # We use a dictionary to perform two aggregations at once
         stats = df_in_grid.groupby(bin_cols).agg(
             unique_passes=("pass_id", "nunique"),
-            unique_bursts=(burst_id_colname, "nunique"),
+            unique_bursts=(akr_burst_id_colname, "nunique"),
         )
 
         # 6. Update the Xarray Data Arrays
