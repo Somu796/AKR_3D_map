@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, ClassVar
+from typing import Any, ClassVar, Literal
 
 import numpy as np
 import pandas as pd
@@ -318,6 +318,16 @@ class AKRGrid(ABC, ObservationTimeCalculator):
                 np.zeros(shape, dtype=np.int32),
                 {"units": "count", "dtype": "int32"},
             ),
+            "burst_count_old": (
+                list(dim_names),
+                np.zeros(shape, dtype=np.int32),
+                {"units": "count", "dtype": "int32"},
+            ),
+            "residence_count": (
+                list(dim_names),
+                np.zeros(shape, dtype=np.int32),
+                {"units": "count", "dtype": "int32"},
+            ),
             "residence_time": (
                 list(dim_names),
                 np.zeros(shape, dtype=np.float64),
@@ -544,7 +554,13 @@ class AKRGrid(ABC, ObservationTimeCalculator):
 
     def plot_3d(
         self,
-        variable: str | None = None,
+        variable: Literal[
+            "normalised_observation_time",
+            "residence_time",
+            "observation_time",
+            "burst_count",
+        ]
+        | None = None,
         path: str = "3D_Objects/grid.html",
         *,
         show_earth: bool = True,

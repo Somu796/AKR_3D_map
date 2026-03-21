@@ -134,6 +134,59 @@ class ObservationTimeCalculator:
 
     #     return self  # type: ignore[return-value]
 
+    def add_residence_burst_count(
+        self,
+        df: pd.DataFrame,
+        coord_colnames: tuple[str, str, str],
+        burst_id_colname: str = "burst_id",
+        gap_hours: int = 2,
+    ) -> Self:
+        """Populates both 'residence_count' (passes) and 'burst_count' (events populated every grid) to validate statistical significance."""
+        # 1. Validations
+        grid = self._validate_and_get_grid()  # type: ignore[attr-defined]
+        self._validate_coord_colnames(df, coord_colnames)  # type: ignore[attr-defined]
+        dim_names = self.get_dimension_names()  # type: ignore[attr-defined]
+
+        # 2. Setup Pass ID (The "Once or Twice" Logic)
+        # Sort by time to ensure gap detection works
+        df = df.sort_values("time_stamp").copy()
+        df["time_stamp"] = pd.to_datetime(df["time_stamp"])
+        df["new_pass"] = df["time_stamp"].diff() > pd.Timedelta(hours=gap_hours)
+        df["pass_id"] = df["new_pass"].cumsum()
+
+        # 3. Assign Bins
+        df = self._assign_bin_indices(df, coord_colnames)  # type: ignore[attr-defined]
+
+        # 4. Filter for In-Grid Data
+        bin_cols = [f"bin_{name}" for name in dim_names]
+        in_grid = (df[bin_cols] >= 0).all(axis=1)
+        df_in_grid = df[in_grid]
+
+        # 5. Group by bins and calculate UNIQUE counts for both
+        # We use a dictionary to perform two aggregations at once
+        stats = df_in_grid.groupby(bin_cols).agg(
+            unique_passes=("pass_id", "nunique"),
+            unique_bursts=(burst_id_colname, "nunique"),
+        )
+
+        # 6. Update the Xarray Data Arrays
+        # Pulling references to the numpy buffers
+        res_count_array: np.ndarray = grid.residence_count.data
+        burst_count_array: np.ndarray = grid.burst_count_old.data
+
+        for iteration, (idx, row) in enumerate(stats.iterrows()):
+            # idx is (bin_0, bin_1, bin_2)
+            i, j, k = map(int, cast(tuple, idx))
+
+            res_count_array[i, j, k] += int(row["unique_passes"])
+            burst_count_array[i, j, k] += int(row["unique_bursts"])
+
+            if iteration % 1000 == 0:
+                print(f"Sampling Update: Processed {iteration} active bins...")
+
+        print(f"Success: {np.count_nonzero(res_count_array)} bins updated.")
+        return self  # type: ignore[return-value]
+
     def add_burst_count(
         self,
         df: pd.DataFrame,
