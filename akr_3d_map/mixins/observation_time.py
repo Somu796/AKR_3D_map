@@ -31,6 +31,7 @@ class ObservationTimeCalculator:
         df: pd.DataFrame,
         timestamp_colname: str,
         variable: str | None = None,
+        gap_hours: int = 2,
     ) -> pd.DataFrame:
         """
         Add a column 'time_interval' showing how long spacecraft was at each position.
@@ -39,7 +40,7 @@ class ObservationTimeCalculator:
             df: DataFrame with 'original_burst_id' and 'burst_timestamp' columns
             variable: depending on for which variable the calculation differs
             timestamp_colname: date.time column to calculate the time interval
-
+            gap_hours: Hours threshold to distinguish separate spacecraft passes when auto-populating residence time
         Returns:
             DataFrame with new 'time_interval' column (in seconds)
 
@@ -50,7 +51,10 @@ class ObservationTimeCalculator:
         """
         if variable == "residence_time":
             df = df.sort_values(by=[timestamp_colname])
-            next_time = df[timestamp_colname].shift(-1)
+            df["pass_id"] = (
+                df[timestamp_colname].diff() > pd.Timedelta(hours=gap_hours)
+            ).cumsum()
+            next_time = df.groupby("pass_id")[timestamp_colname].shift(-1)
 
         if variable == "observation_time":
             df = df.sort_values(by=[burst_id_colname, timestamp_colname])
@@ -64,7 +68,9 @@ class ObservationTimeCalculator:
 
         # For last position in each burst, use previous interval
         if variable == "residence_time":
-            df[time_interval_colname] = df[time_interval_colname].ffill()
+            df[time_interval_colname] = df.groupby("pass_id")[
+                time_interval_colname
+            ].ffill()
         if variable == "observation_time":
             df[time_interval_colname] = df.groupby(burst_id_colname)[
                 time_interval_colname
@@ -184,68 +190,6 @@ class ObservationTimeCalculator:
         print(f"Grid populated: {np.count_nonzero(obs_array)} bins updated.")
         return self  # type: ignore[return-value]
 
-    # def add_burst_count(
-    #     self,
-    #     df: pd.DataFrame,
-    #     coord_colnames: tuple[str, str, str],
-    # ) -> Self:
-    #     """
-    #     Same as burst count, only logic different is this it adds up 1 for all the grid not only first grid.
-
-    #     Args:
-    #         df: DataFrame with position and timestamp data
-    #         coord_colnames: Column names for coordinates (coord1, coord2, coord3)
-
-    #     Returns:
-    #         Self: for method chaining
-
-    #     Example:
-    #         >>> cart.add_burst_count(
-    #         df=wind_data,
-    #         coord_colnames=("x_gse", "y_gse", "z_gse"),
-    #         )
-    #         >>> burst_count_data = cart.grid.burst_count  # Access the populated grid
-
-    #     """
-    #     # 1. Validations
-    #     # validate and return grid, type check safe
-    #     grid = self._validate_and_get_grid()  # type: ignore[attr-defined]
-    #     # validate coord colnames exists in given dataframe
-    #     self._validate_coord_colnames(df, coord_colnames)  # type: ignore[attr-defined]
-
-    #     # 2. Importing dimension for the specific child class
-    #     dim_names = self.get_dimension_names()  # type: ignore[attr-defined]
-
-    #     # 4. Assign bins
-    #     df = self._assign_bin_indices(df, coord_colnames)  # type: ignore[attr-defined]
-
-    #     # 5. Filter only data within grid boundaries
-    #     in_grid = (
-    #         (df[f"bin_{dim_names[0]}"] >= 0)
-    #         & (df[f"bin_{dim_names[1]}"] >= 0)
-    #         & (df[f"bin_{dim_names[2]}"] >= 0)
-    #     )
-    #     df_in_grid = df[in_grid]
-
-    #     # 6. Group by bin indices and sum intervals
-    #     grouped = df_in_grid.groupby(
-    #         [f"bin_{dim_names[0]}", f"bin_{dim_names[1]}", f"bin_{dim_names[2]}"],
-    #     )[burst_id_colname].nunique()
-
-    #     # 7. Update the internal xarray data directly
-    #     obs_array: np.ndarray = grid.observation_count.data
-
-    #     for iteration, (idx, n_bursts) in enumerate(grouped.items()):
-    #         i, j, k = cast("tuple[int, int, int]", idx)
-    #         obs_array[int(i), int(j), int(k)] += n_bursts
-
-    #         if iteration % 500 == 0:
-    #             print(f"Update in progress... processed {iteration} bins.")
-
-    #     print(f"Grid populated: {np.count_nonzero(obs_array)} bins updated.")
-
-    #     return self  # type: ignore[return-value]
-
     def add_residence_count(
         self,
         df: pd.DataFrame,
@@ -268,7 +212,7 @@ class ObservationTimeCalculator:
 
         # Mark a new pass if the gap between points is larger than threshold
         df["new_pass"] = df[residence_timestamp_colname].diff() > pd.Timedelta(
-            hours=gap_hours
+            hours=gap_hours,
         )
         df["pass_id"] = df["new_pass"].cumsum()
 
@@ -375,6 +319,7 @@ class ObservationTimeCalculator:
         df: pd.DataFrame,
         coord_colnames: tuple[str, str, str],
         timestamp_colname: str = "time_stamp",
+        gap_hours: int = 2,
     ) -> Self:
         """
         Populate the grid with residence time (total seconds spent per bin).
@@ -383,6 +328,7 @@ class ObservationTimeCalculator:
             df: DataFrame with position and interval data
             coord_colnames: Column names for coordinates (coord1, coord2, coord3)
             timestamp_colname: which datetime column to use to calculate the time interval
+            gap_hours: Hours threshold to distinguish separate spacecraft passes when auto-populating residence time
 
         Returns:
             Self: for method chaining
@@ -401,6 +347,7 @@ class ObservationTimeCalculator:
                 df,
                 timestamp_colname=timestamp_colname,
                 variable="residence_time",
+                gap_hours=gap_hours,
             )
 
         # 4. Assign bins based on coordinates
@@ -444,6 +391,7 @@ class ObservationTimeCalculator:
         coord_colnames: tuple[str, str, str],
         akr_timestamp_colname: str = "burst_timestamp",
         residence_timestamp_colname: str = "time_stamp",
+        gap_hours: int = 2,
     ) -> Self:
         """
         Populate the grid with normalised observation time (Observation time / Residence time).
@@ -458,6 +406,7 @@ class ObservationTimeCalculator:
             coord_colnames: Column names for coordinates (coord1, coord2, coord3).
             akr_timestamp_colname: Timestamp column for AKR data.
             residence_timestamp_colname: Timestamp column for residence data.
+            gap_hours: Hours threshold to distinguish separate spacecraft passes when auto-populating residence time
 
         Returns:
             Self: for method chaining
@@ -476,6 +425,7 @@ class ObservationTimeCalculator:
                 df=satellite_residence_df,
                 coord_colnames=coord_colnames,
                 timestamp_colname=residence_timestamp_colname,
+                gap_hours=gap_hours,
             )
 
         # 3. Ensure Numerator (Observation Time) is populated
@@ -519,3 +469,67 @@ class ObservationTimeCalculator:
         )
 
         return self  # type: ignore[return-value]
+
+
+# %% Previous logic
+# def add_burst_count(
+#     self,
+#     df: pd.DataFrame,
+#     coord_colnames: tuple[str, str, str],
+# ) -> Self:
+#     """
+#     Same as burst count, only logic different is this it adds up 1 for all the grid not only first grid.
+
+#     Args:
+#         df: DataFrame with position and timestamp data
+#         coord_colnames: Column names for coordinates (coord1, coord2, coord3)
+
+#     Returns:
+#         Self: for method chaining
+
+#     Example:
+#         >>> cart.add_burst_count(
+#         df=wind_data,
+#         coord_colnames=("x_gse", "y_gse", "z_gse"),
+#         )
+#         >>> burst_count_data = cart.grid.burst_count  # Access the populated grid
+
+#     """
+#     # 1. Validations
+#     # validate and return grid, type check safe
+#     grid = self._validate_and_get_grid()  # type: ignore[attr-defined]
+#     # validate coord colnames exists in given dataframe
+#     self._validate_coord_colnames(df, coord_colnames)  # type: ignore[attr-defined]
+
+#     # 2. Importing dimension for the specific child class
+#     dim_names = self.get_dimension_names()  # type: ignore[attr-defined]
+
+#     # 4. Assign bins
+#     df = self._assign_bin_indices(df, coord_colnames)  # type: ignore[attr-defined]
+
+#     # 5. Filter only data within grid boundaries
+#     in_grid = (
+#         (df[f"bin_{dim_names[0]}"] >= 0)
+#         & (df[f"bin_{dim_names[1]}"] >= 0)
+#         & (df[f"bin_{dim_names[2]}"] >= 0)
+#     )
+#     df_in_grid = df[in_grid]
+
+#     # 6. Group by bin indices and sum intervals
+#     grouped = df_in_grid.groupby(
+#         [f"bin_{dim_names[0]}", f"bin_{dim_names[1]}", f"bin_{dim_names[2]}"],
+#     )[burst_id_colname].nunique()
+
+#     # 7. Update the internal xarray data directly
+#     obs_array: np.ndarray = grid.observation_count.data
+
+#     for iteration, (idx, n_bursts) in enumerate(grouped.items()):
+#         i, j, k = cast("tuple[int, int, int]", idx)
+#         obs_array[int(i), int(j), int(k)] += n_bursts
+
+#         if iteration % 500 == 0:
+#             print(f"Update in progress... processed {iteration} bins.")
+
+#     print(f"Grid populated: {np.count_nonzero(obs_array)} bins updated.")
+
+#     return self  # type: ignore[return-value]
