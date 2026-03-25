@@ -24,7 +24,8 @@ def main() -> None:
     )
 
     residence_data = pd.read_parquet(
-        f"{project_root}/data/processed/02_processed_wind_data_residence_time_1995_2004.parquet",
+        f"{project_root}/data/processed/05_processed_wind_data_residence_time_1995_2004_high_res.parquet",
+        # f"{project_root}/data/processed/02_processed_wind_data_residence_time_1995_2004.parquet",
     )
 
     # Runing Code
@@ -61,7 +62,7 @@ def main() -> None:
             df=residence_data,
             coord_colnames=("x_gse", "y_gse", "z_gse"),
             residence_timestamp_colname="time_stamp",
-            gap_hours=2,  # Optional: defaults to 2 hrs this is there to compare
+            gap_hours=2,  # Threshold in hours to identify separate orbital passes
         )
         # Calculate normalised observation time given wind satellite data
         .add_normalised_observation_time(

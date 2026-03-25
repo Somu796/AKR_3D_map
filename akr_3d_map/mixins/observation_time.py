@@ -31,7 +31,6 @@ class ObservationTimeCalculator:
         df: pd.DataFrame,
         timestamp_colname: str,
         variable: str | None = None,
-        gap_hours: int = 2,
     ) -> pd.DataFrame:
         """
         Add a column 'time_interval' showing how long spacecraft was at each position.
@@ -40,7 +39,6 @@ class ObservationTimeCalculator:
             df: DataFrame with 'original_burst_id' and 'burst_timestamp' columns
             variable: depending on for which variable the calculation differs
             timestamp_colname: date.time column to calculate the time interval
-            gap_hours: Hours threshold to distinguish separate spacecraft passes when auto-populating residence time
         Returns:
             DataFrame with new 'time_interval' column (in seconds)
 
@@ -51,10 +49,7 @@ class ObservationTimeCalculator:
         """
         if variable == "residence_time":
             df = df.sort_values(by=[timestamp_colname])
-            df["pass_id"] = (
-                df[timestamp_colname].diff() > pd.Timedelta(hours=gap_hours)
-            ).cumsum()
-            next_time = df.groupby("pass_id")[timestamp_colname].shift(-1)
+            next_time = df[timestamp_colname].shift(-1)
 
         if variable == "observation_time":
             df = df.sort_values(by=[burst_id_colname, timestamp_colname])
@@ -68,9 +63,7 @@ class ObservationTimeCalculator:
 
         # For last position in each burst, use previous interval
         if variable == "residence_time":
-            df[time_interval_colname] = df.groupby("pass_id")[
-                time_interval_colname
-            ].ffill()
+            df[time_interval_colname] = df[time_interval_colname].ffill()
         if variable == "observation_time":
             df[time_interval_colname] = df.groupby(burst_id_colname)[
                 time_interval_colname
@@ -197,7 +190,18 @@ class ObservationTimeCalculator:
         residence_timestamp_colname: str = "time_stamp",
         gap_hours: int = 2,
     ) -> Self:
-        """Populates 'residence_count' in the grid by identifying unique spacecraft passes based on time gaps in the residence data."""
+        """
+        Populates 'residence_count' in the grid by identifying unique spacecraft passes based on time gaps in the residence data.
+
+        Args:
+            df: residence time dataframe
+            coord_colnames: Column names for coordinates (coord1, coord2, coord3)
+            residence_timestamp_colname: Timestamp column for residence data
+            gap_hours: Hours threshold to distinguish separate spacecraft passes when auto-populating residence time
+        Returns:
+            Self: for method chaining
+
+        """
         # 1. Validations
         grid = self._validate_and_get_grid()  # type: ignore[attr-defined]
         self._validate_coord_colnames(df, coord_colnames)  # type: ignore[attr-defined]
@@ -207,7 +211,7 @@ class ObservationTimeCalculator:
         # We must sort to detect gaps between consecutive chronological points
         df = df.sort_values(residence_timestamp_colname).copy()
         df[residence_timestamp_colname] = pd.to_datetime(
-            df[residence_timestamp_colname]
+            df[residence_timestamp_colname],
         )
 
         # Mark a new pass if the gap between points is larger than threshold
@@ -319,7 +323,6 @@ class ObservationTimeCalculator:
         df: pd.DataFrame,
         coord_colnames: tuple[str, str, str],
         timestamp_colname: str = "time_stamp",
-        gap_hours: int = 2,
     ) -> Self:
         """
         Populate the grid with residence time (total seconds spent per bin).
@@ -328,7 +331,6 @@ class ObservationTimeCalculator:
             df: DataFrame with position and interval data
             coord_colnames: Column names for coordinates (coord1, coord2, coord3)
             timestamp_colname: which datetime column to use to calculate the time interval
-            gap_hours: Hours threshold to distinguish separate spacecraft passes when auto-populating residence time
 
         Returns:
             Self: for method chaining
@@ -347,7 +349,6 @@ class ObservationTimeCalculator:
                 df,
                 timestamp_colname=timestamp_colname,
                 variable="residence_time",
-                gap_hours=gap_hours,
             )
 
         # 4. Assign bins based on coordinates
@@ -391,7 +392,6 @@ class ObservationTimeCalculator:
         coord_colnames: tuple[str, str, str],
         akr_timestamp_colname: str = "burst_timestamp",
         residence_timestamp_colname: str = "time_stamp",
-        gap_hours: int = 2,
     ) -> Self:
         """
         Populate the grid with normalised observation time (Observation time / Residence time).
@@ -406,7 +406,6 @@ class ObservationTimeCalculator:
             coord_colnames: Column names for coordinates (coord1, coord2, coord3).
             akr_timestamp_colname: Timestamp column for AKR data.
             residence_timestamp_colname: Timestamp column for residence data.
-            gap_hours: Hours threshold to distinguish separate spacecraft passes when auto-populating residence time
 
         Returns:
             Self: for method chaining
@@ -425,7 +424,6 @@ class ObservationTimeCalculator:
                 df=satellite_residence_df,
                 coord_colnames=coord_colnames,
                 timestamp_colname=residence_timestamp_colname,
-                gap_hours=gap_hours,
             )
 
         # 3. Ensure Numerator (Observation Time) is populated
