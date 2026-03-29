@@ -31,6 +31,8 @@ class ObservationTimeCalculator:
         df: pd.DataFrame,
         timestamp_colname: str,
         variable: str | None = None,
+        burst_id_colname: str = burst_id_colname,
+        time_interval_colname: str = time_interval_colname,
     ) -> pd.DataFrame:
         """
         Add a column 'time_interval' showing how long spacecraft was at each position.
@@ -39,6 +41,8 @@ class ObservationTimeCalculator:
             df: DataFrame with 'original_burst_id' and 'burst_timestamp' columns
             variable: depending on for which variable the calculation differs
             timestamp_colname: date.time column to calculate the time interval
+            burst_id_colname: burst id column name in the akr burst data
+            time_interval_colname: the newly calculated time_interval_colname
         Returns:
             DataFrame with new 'time_interval' column (in seconds)
 
@@ -252,6 +256,7 @@ class ObservationTimeCalculator:
         df: pd.DataFrame,
         coord_colnames: tuple[str, str, str],
         timestamp_colname: str = "burst_timestamp",
+        burst_id_colname: str = burst_id_colname,
     ) -> Self:
         """
         Calculate time intervals and populate the grid with observation time.
@@ -260,6 +265,7 @@ class ObservationTimeCalculator:
             df: DataFrame with position and timestamp data
             coord_colnames: Column names for coordinates (coord1, coord2, coord3)
             timestamp_colname: which datetime column to use to calculate the time interval
+            burst_id_colname: column with id for each unique burst
 
         Returns:
             Self: for method chaining
@@ -286,6 +292,7 @@ class ObservationTimeCalculator:
             df,
             timestamp_colname=timestamp_colname,
             variable="observation_time",
+            burst_id_colname=burst_id_colname,
         )
 
         # 4. Assign bins
@@ -392,6 +399,7 @@ class ObservationTimeCalculator:
         coord_colnames: tuple[str, str, str],
         akr_timestamp_colname: str = "burst_timestamp",
         residence_timestamp_colname: str = "time_stamp",
+        burst_id_colname: str = burst_id_colname,
     ) -> Self:
         """
         Populate the grid with normalised observation time (Observation time / Residence time).
@@ -406,7 +414,7 @@ class ObservationTimeCalculator:
             coord_colnames: Column names for coordinates (coord1, coord2, coord3).
             akr_timestamp_colname: Timestamp column for AKR data.
             residence_timestamp_colname: Timestamp column for residence data.
-
+            burst_id_colname: id for each unique burst incident
         Returns:
             Self: for method chaining
 
@@ -433,6 +441,7 @@ class ObservationTimeCalculator:
                 df=akr_df,
                 coord_colnames=coord_colnames,
                 timestamp_colname=akr_timestamp_colname,
+                burst_id_colname=burst_id_colname,
             )
 
         # 4. Perform Normalisation

@@ -47,6 +47,7 @@ def main() -> None:
             wind_data,
             timestamp_colname="burst_timestamp",
             coord_colnames=("x_gse", "y_gse", "z_gse"),
+            burst_id_colname="original_burst_id",
         )
         .add_observation_count(
             wind_data,
@@ -121,6 +122,7 @@ def main() -> None:
             wind_data,
             timestamp_colname="burst_timestamp",
             coord_colnames=("LT_gse", "radius", "lat_gse"),
+            burst_id_colname="original_burst_id",
         )
         # NEW: Total Point Count (Add 1 for every row)
         .add_observation_count(
