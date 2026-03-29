@@ -16,7 +16,7 @@ def main() -> None:
     sys.path.append(str(project_root))
 
     # Define standard data subdirectories for easy access later
-    ASSETS_DIR = project_root / "assets" / "3D_Objects_02"
+    ASSETS_DIR = project_root / "assets" / "3D_Objects_03"
 
     # 3. Importing Data
     wind_data = pd.read_parquet(
@@ -24,7 +24,8 @@ def main() -> None:
     )
 
     residence_data = pd.read_parquet(
-        f"{project_root}/data/processed/05_processed_wind_data_residence_time_1995_2004_high_res.parquet",
+        f"{project_root}/data/processed/06_processed_combined_wind_data_residence_time_1995_2004_high_res.parquet",
+        # f"{project_root}/data/processed/05_processed_wind_data_residence_time_1995_2004_high_res.parquet",
         # f"{project_root}/data/processed/02_processed_wind_data_residence_time_1995_2004.parquet",
     )
 
