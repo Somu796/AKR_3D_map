@@ -705,7 +705,7 @@ class AKRGrid(ABC, ObservationTimeCalculator):
 
         if fmt not in valid_formats:
             error_message = (
-                f"Unsupported format: {fmt}. Use {list(valid_formats.keys())}",
+                f"Unsupported format: {fmt}. Use {list(valid_formats.keys())}"
             )
             raise ValueError(error_message)
 
