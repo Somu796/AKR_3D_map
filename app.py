@@ -64,7 +64,7 @@ def main() -> None:
             df=residence_data,
             coord_colnames=("x_gse", "y_gse", "z_gse"),
             residence_timestamp_colname="time_stamp",
-            gap_hours=2,  # Threshold in hours to identify separate orbital passes
+            gap_hours=0,  # we don't separate by pass time
         )
         # Calculate normalised observation time given wind satellite data
         .add_normalised_observation_time(
@@ -141,7 +141,7 @@ def main() -> None:
             df=residence_data,
             coord_colnames=("LT_gse", "radius", "lat_gse"),
             residence_timestamp_colname="time_stamp",
-            gap_hours=2,
+            gap_hours=0,  # we don't separate by pass time
         )
         # Calculate normalised observation time (The Probability)
         .add_normalised_observation_time(
