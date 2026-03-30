@@ -10,13 +10,14 @@ from akr_3d_map.grid_3d import (
 )
 
 
-def main() -> None:
-    # 2. Setting project paths
-    project_root = Path.cwd()
-    sys.path.append(str(project_root))
+# 2. Setting project paths
+project_root = Path.cwd()
+sys.path.append(str(project_root))
 
-    # Define standard data subdirectories for easy access later
-    ASSETS_DIR = project_root / "assets" / "3D_Objects_03"
+# Define standard data subdirectories for easy access later
+ASSETS_DIR = project_root / "assets" / "3D_Objects_03"
+
+def main() -> None:
 
     # 3. Importing Data
     wind_data = pd.read_parquet(
@@ -78,7 +79,7 @@ def main() -> None:
 
     cart.plot_3d(
         variable="burst_count",
-        path=f"{ASSETS_DIR}/01_cartesian_grid_with_burst_counts.json",
+        path_to_save=f"{ASSETS_DIR}/01_cartesian_grid_with_burst_counts.json",
         show_earth=True,
         colorscale = "Viridis", 
         earth_image_path_str=f"{project_root}/assets/temp.jpg",
@@ -86,7 +87,7 @@ def main() -> None:
     )
     cart.plot_3d(
         variable="observation_time",
-        path=f"{ASSETS_DIR}/02_cartesian_grid_with_observation_time.json",
+        path_to_save=f"{ASSETS_DIR}/02_cartesian_grid_with_observation_time.json",
         colorscale = "Viridis", 
         show_earth=True,
         earth_image_path_str=f"{project_root}/assets/temp.jpg",
@@ -94,7 +95,7 @@ def main() -> None:
     )
     cart.plot_3d(
         variable="residence_time",
-        path=f"{ASSETS_DIR}/03_cartesian_grid_with_residence_time.json",
+        path_to_save=f"{ASSETS_DIR}/03_cartesian_grid_with_residence_time.json",
         colorscale = "Viridis", 
         show_earth=True,
         earth_image_path_str=f"{project_root}/assets/temp.jpg",
@@ -102,7 +103,7 @@ def main() -> None:
     )
     cart.plot_3d(
         variable="normalised_observation_time",
-        path=f"{ASSETS_DIR}/04_cartesian_grid_with_normalised_observation_time.json",
+        path_to_save=f"{ASSETS_DIR}/04_cartesian_grid_with_normalised_observation_time.json",
         colorscale = "Viridis", 
         show_earth=True,
         earth_image_path_str=f"{project_root}/assets/temp.jpg",
@@ -159,7 +160,7 @@ def main() -> None:
 
     ltrmlat.plot_3d(
         variable="burst_count",
-        path=f"{ASSETS_DIR}/01_ltrmat_grid_with_burst_counts.json",
+        path_to_save=f"{ASSETS_DIR}/01_ltrmat_grid_with_burst_counts.json",
         colorscale = "Viridis", 
         show_earth=True,
         earth_image_path_str=f"{project_root}/assets/temp.jpg",
@@ -167,7 +168,7 @@ def main() -> None:
     )
     ltrmlat.plot_3d(
         variable="observation_time",
-        path=f"{ASSETS_DIR}/02_ltrmat_grid_with_observation_time.json",
+        path_to_save=f"{ASSETS_DIR}/02_ltrmat_grid_with_observation_time.json",
         colorscale = "Viridis", 
         show_earth=True,
         earth_image_path_str=f"{project_root}/assets/temp.jpg",
@@ -175,7 +176,7 @@ def main() -> None:
     )
     ltrmlat.plot_3d(
         variable="residence_time",
-        path=f"{ASSETS_DIR}/03_ltrmat_grid_with_residence_time.json",
+        path_to_save=f"{ASSETS_DIR}/03_ltrmat_grid_with_residence_time.json",
         colorscale = "Viridis", 
         show_earth=True,
         earth_image_path_str=f"{project_root}/assets/temp.jpg",
@@ -183,7 +184,7 @@ def main() -> None:
     )
     ltrmlat.plot_3d(
         variable="normalised_observation_time",
-        path=f"{ASSETS_DIR}/04_ltrmat_grid_with_normalised_observation_time.json",
+        path_to_save=f"{ASSETS_DIR}/04_ltrmat_grid_with_normalised_observation_time.json",
         colorscale = "Viridis", 
         show_earth=True,
         earth_image_path_str=f"{project_root}/assets/temp.jpg",
@@ -191,11 +192,40 @@ def main() -> None:
     )
 
     # Saving the Data
-    cart.save_grid(path=f"{ASSETS_DIR}/cart_akr_grid.parquet", fmt="parquet")
-    ltrmlat.save_grid(path=f"{ASSETS_DIR}/ltrmlat_akr_grid.parquet", fmt="parquet")
+    cart.save_grid(path_to_save=f"{ASSETS_DIR}/cart_akr_grid.parquet", fmt="parquet")
+    ltrmlat.save_grid(path_to_save=f"{ASSETS_DIR}/ltrmlat_akr_grid.parquet", fmt="parquet")
     print("--- Job Completed Successfully ---")
+
+def filtered_plots():
+    cart = Cartesian().create_grid()
+    ltrmlat = LTRMLat().create_grid()
+
+    cart_data = pd.read_parquet(
+    f"{ASSETS_DIR}/cart_akr_grid.parquet",
+    )
+
+    ltrmlat_data = pd.read_parquet(
+        f"{ASSETS_DIR}/ltrmlat_akr_grid.parquet",
+    )
+
+    cart.plot_3d_from_dataframe(
+    df=cart_data.query("normalised_observation_time < 1"),
+    path_to_save=f"{project_root}/assets/3D_Objects_filtered/cart_normalised_observation_time.html",
+    variable="normalised_observation_time",
+    coord_colnames=("x", "y", "z"),
+    )
+
+    ltrmlat.plot_3d_from_dataframe(
+        df=ltrmlat_data.query("normalised_observation_time < 1"),
+        path_to_save=f"{project_root}/assets/3D_Objects_filtered/ltrmlat_normalised_observation_time.html",
+        variable="normalised_observation_time",
+        coord_colnames=("lt", "r", "mlat"),
+    )
+
+     
 
 
 # %% Main section
 if __name__ == "__main__":
-    main()
+    # main()
+    filtered_plots()

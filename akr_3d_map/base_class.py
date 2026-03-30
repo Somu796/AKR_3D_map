@@ -561,19 +561,19 @@ class AKRGrid(ABC, ObservationTimeCalculator):
             "burst_count",
         ]
         | None = None,
-        path: str = "3D_Objects/grid.html",
+        path_to_save: str = "3D_Objects/grid.html",
         *,
         show_earth: bool = True,
         earth_image_path_str: str = earth_image_path_str,
         show_sun: bool = False,
-        colorscale: str = "Cividis",
+        colorscale: str = "Viridis",
     ) -> "AKRGrid":
         """
         Plot 3D grid with wireframe (works for ALL coordinate systems).
 
         Args:
             variable: Name of the variable to plot (optional)
-            path: Path to save the HTML file (default: '3D_Objects/grid.html')
+            path_to_save: Path to save the HTML file (default: '3D_Objects/grid.html')
             show_earth: Whether to show Earth in the plot (default: True)
             earth_image_path_str: Add path to the earth image
             show_sun: Whether to show Sun in the plot (default: False)
@@ -685,17 +685,167 @@ class AKRGrid(ABC, ObservationTimeCalculator):
             fig.update_layout(**get_3d_layout_config(title, axis_labels=axis_labels))
 
         # 7. Save plot
-        save_plot(fig, path)
+        save_plot(fig, path_to_save)
 
         self.fig = fig
         return self
 
-    def save_grid(self, path: str = "./akr_grid.parquet", fmt: str = "parquet") -> str:
+
+    def plot_3d_from_dataframe( # TODO(@Somu796)-07
+        self,
+        df: pd.DataFrame,
+        path_to_save: str,
+        variable: Literal[
+            "normalised_observation_time",
+            "residence_time",
+            "observation_time",
+            "burst_count",
+            "observation_count",
+            "residence_count",
+        ],
+        coord_colnames: tuple[str, str, str],
+        colorscale: str = "Viridis",
+        earth_image_path_str: str = earth_image_path_str,
+        *,
+        show_earth: bool = True,
+        show_sun: bool = False,
+    ) -> str:
+        """
+        Plot 3D scatter directly from a DataFrame and save to HTML.
+
+        Args:
+            df: DataFrame with coordinate columns and variable column.
+            path_to_save: Path to save the HTML file.
+            variable: Name of the variable column to plot.
+            coord_colnames: Column names for (coord1, coord2, coord3).
+                For cartesian: e.g. ("x_gse", "y_gse", "z_gse")
+                For ltrmlat:   e.g. ("lt", "r", "mlat")
+            colorscale: Plotly colorscale name.
+            show_earth: Whether to show Earth (only applies to cartesian).
+            earth_image_path_str: Path to earth image.
+            show_sun: Whether to show Sun (only applies to cartesian).
+
+        Returns:
+            str: Path where the HTML file was saved.
+
+        Example:
+            >>> cart.plot_3d_from_dataframe(
+            ...     df=cart_data,
+            ...     path_to_save="assets/plot.html",
+            ...     variable="normalised_observation_time",
+            ...     coord_colnames=("x", "y", "z"),
+            ... )
+
+        """
+        # 1. Validate coord columns exist
+        missing = [c for c in coord_colnames if c not in df.columns]
+        if missing:
+            raise ValueError(f"Coordinate columns not found in DataFrame: {missing}")
+
+        # 2. Validate variable exists
+        if variable not in df.columns:
+            raise ValueError(
+                f"Variable '{variable}' not found in DataFrame columns: {list(df.columns)}"
+            )
+
+        # 3. Unpack coordinate columns
+        x_col, y_col, z_col = coord_colnames
+
+        # 4. Filter to non-zero values only
+        df_plot = df[df[variable] > 0].copy()
+        if df_plot.empty:
+            raise ValueError(f"No non-zero values found for variable '{variable}'")
+
+        # 5. Initialise figure
+        fig = go.Figure()
+
+        # 6. Build display label
+        clean_name = variable.replace("_", " ").title()
+        display_label = clean_name
+
+        # 7. Convert coordinates if needed and build hover template
+        if self.plot_in_cartesian:
+            plot_x, plot_y, plot_z = [], [], []
+            for _, row in df_plot.iterrows():
+                x, y, z = self._transform_to_cartesian(
+                    row[x_col], row[y_col], row[z_col]
+                )
+                plot_x.append(x)
+                plot_y.append(y)
+                plot_z.append(z)
+
+            hovertemplate = (
+                f"<b>{x_col}:</b> %{{x:.2f}} R<sub>E</sub><br>"
+                f"<b>{y_col}:</b> %{{y:.2f}} R<sub>E</sub><br>"
+                f"<b>{z_col}:</b> %{{z:.2f}} R<sub>E</sub><br>"
+                f"<b>{clean_name}:</b> %{{customdata:.4f}}<br>"
+                "<extra></extra>"
+            )
+        else:
+            plot_x = df_plot[x_col].tolist()
+            plot_y = df_plot[y_col].tolist()
+            plot_z = df_plot[z_col].tolist()
+
+            hovertemplate = (
+                f"<b>{x_col}:</b> %{{x:.2f}} hrs<br>"
+                f"<b>{y_col}:</b> %{{y:.2f}} R<sub>E</sub><br>"
+                f"<b>{z_col}:</b> %{{z:.2f}}°<br>"
+                f"<b>{clean_name}:</b> %{{customdata:.4f}}<br>"
+                "<extra></extra>"
+            )
+
+        # 8. Add scatter trace
+        fig.add_trace(
+            go.Scatter3d(
+                x=plot_x,
+                y=plot_y,
+                z=plot_z,
+                mode="markers",
+                customdata=df_plot[variable],
+                hovertemplate=hovertemplate,
+                marker={
+                    "size": 5,
+                    "color": df_plot[variable],
+                    "colorscale": colorscale,
+                    "colorbar": {
+                        "title": display_label +" (dimensionless)",
+                        "thickness": 15,
+                    },
+                    "opacity": 0.8,
+                    "showscale": True,
+                },
+                name=clean_name,
+                showlegend=False,
+            ),
+        )
+
+        # 9. Add celestial bodies (cartesian only)
+        if self.plot_in_cartesian:
+            add_celestial_bodies(
+                fig,
+                show_earth=show_earth,
+                earth_image_path=earth_image_path_str,
+                show_sun=show_sun,
+            )
+
+        # 10. Layout
+        title = f"3D Grid: {clean_name}"
+        if self.plot_in_cartesian:
+            fig.update_layout(**get_3d_layout_config(title))
+        else:
+            axis_labels = self._get_axis_labels()
+            fig.update_layout(**get_3d_layout_config(title, axis_labels=axis_labels))
+
+        # 11. Save and return path
+        save_plot(fig, path_to_save)
+        return path_to_save
+
+    def save_grid(self, path_to_save: str = "./akr_grid.parquet", fmt: str = "parquet") -> str:
         """
         Saves the xarray Dataset to a specified format and path.
 
         Args:
-            path: path directory where to save the file
+            path_to_save: path directory where to save the file
             fmt: what format to save the file, e.g. parquet (default), netcdf, zarr
 
         """
@@ -710,7 +860,7 @@ class AKRGrid(ABC, ObservationTimeCalculator):
             raise ValueError(error_message)
 
         # Ensure path has the correct extension if only a directory or base name is provided
-        target_path = Path(path)
+        target_path = Path(path_to_save)
         if target_path.suffix != valid_formats[fmt]:
             target_path = target_path.with_suffix(valid_formats[fmt])
 
