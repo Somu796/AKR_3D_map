@@ -336,7 +336,7 @@ class AKRGrid(ABC, ObservationTimeCalculator):
             "normalised_observation_time": (
                 list(dim_names),
                 np.zeros(shape, dtype=np.float64),
-                {"units": "ratio", "dtype": "float64"},
+                {"units": "dimensionless", "dtype": "float64"},
             ),
         }
 
