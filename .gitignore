@@ -28,4 +28,4 @@ Folder_structure.md
 /.quarto/
 
 scripts/README.md
-
+data/processed/05_processed_wind_data_residence_time_1995_2004_high_res.parquet
