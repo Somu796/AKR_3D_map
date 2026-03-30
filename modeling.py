@@ -1,6 +1,8 @@
 import os
+
 os.environ["TF_USE_LEGACY_KERAS"] = "1"
 
+# didn't got synced well
 # %% 1. Importing Libraries
 import sys
 import typing
@@ -12,9 +14,9 @@ import numpy as np
 import pandas as pd
 import plotly.graph_objects as go
 import tensorflow as tf
+import tf_keras as keras
 from gpflow.utilities import print_summary
 from sklearn.preprocessing import StandardScaler
-import tf_keras as keras
 
 # %% 2. Setting up Environment
 

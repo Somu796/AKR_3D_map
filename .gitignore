@@ -27,5 +27,7 @@ Folder_structure.md
 10_all.py
 /.quarto/
 
+
+data/processed/05_processed_wind_data_residence_time_1995_2004_high_res.parquet
 scripts/README.md
 
