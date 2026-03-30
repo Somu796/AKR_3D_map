@@ -24,8 +24,8 @@ def main() -> None:
     )
 
     residence_data = pd.read_parquet(
-        # f"{project_root}/data/processed/06_processed_combined_wind_data_residence_time_1995_2004_high_res.parquet",
-        f"{project_root}/data/processed/05_processed_wind_data_residence_time_1995_2004_high_res.parquet",
+        f"{project_root}/data/processed/06_processed_combined_wind_data_residence_time_1995_2004_high_res.parquet",
+        # f"{project_root}/data/processed/05_processed_wind_data_residence_time_1995_2004_high_res.parquet",
         # f"{project_root}/data/processed/02_processed_wind_data_residence_time_1995_2004.parquet",
     )
 
