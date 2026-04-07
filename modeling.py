@@ -71,7 +71,7 @@ model = gpflow.models.SVGP(
     num_data=X_scaled.shape[0],
 )
 # %% 9. Setup Checkpointing (MUST BE HERE)
-optimizer = tf.optimizers.Adam(learning_rate=0.01)
+optimizer = tf.optimizers.Adam(learning_rate=0.0005)
 ckpt = tf.train.Checkpoint(model=model, optimizer=optimizer)
 checkpoint_dir = project_root / "assets" / "model_checkpoints"
 checkpoint_dir.mkdir(parents=True, exist_ok=True)
