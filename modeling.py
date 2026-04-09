@@ -412,7 +412,7 @@ def bionomial_modeling():
         "r",  # raw distance in Earth radii
         "r_dist_from_peak",  # distance from the most-observed shell
         # Is Wind in a known active region?
-        "is_nightside",  # away from Sun
+        # "is_nightside",  # away from Sun
         "is_auroral",  # in the auroral latitude band
         "is_inner_mag",  # within 2-8 Re
         # Joint effects
