@@ -54,6 +54,7 @@ PROCESSED_DATA_DIR = project_root / "data" / "processed"
 ASSETS_DIR = project_root / "assets" / "3D_Objects"
 IMAGE_DIR = project_root / "assets"
 
+
 def visualise_3D(plot_save_path):
     path = Path(plot_save_path)
     if path.exists():
@@ -131,7 +132,7 @@ cart = (
     .add_residence_time(residence_data, coord_colnames=("x_gse", "y_gse", "z_gse"))
     .plot_3d(
         variable="burst_count |residence_time | residence_time",
-        path="plot_save_path",
+        path_to_save="plot_save_path",
         show_earth=True,
         earth_image_path_str="/temp.jpg",
         show_sun=False,
@@ -160,7 +161,7 @@ ltrmlat = (
     .add_residence_time(residence_data, coord_colnames=("x_gse", "y_gse", "z_gse"))
     .plot_3d(
         variable="burst_count |residence_time | residence_time",
-        path="plot_save_path",
+        path_to_save="plot_save_path",
         show_earth=True,
         earth_image_path_str="/temp.jpg",
         show_sun=False,
