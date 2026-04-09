@@ -421,7 +421,13 @@ def bionomial_modeling():
         "night_x_auroral",  # nightside + auroral combined
         "night_x_auroral_x_inner",  # all three source region flags combined
     ]
-
+    
+    # Automatically drop any feature with zero variance in the filtered data
+    zero_var = [f for f in features if df_model[f].std() == 0]
+    if zero_var:
+        print(f"Dropping zero-variance features: {zero_var}")
+    features = [f for f in features if f not in zero_var]
+    
     X = sm.add_constant(df_model[features])
     # add_constant adds a column of 1s → allows the model to fit an intercept
     # (the baseline log-odds when all features are zero)
