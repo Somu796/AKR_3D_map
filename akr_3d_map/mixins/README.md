@@ -140,7 +140,7 @@ Calls `_add_time_intervals` with `variable="residence_time"`. Intervals are comp
 
 **`grid.residence_time`**   total seconds the spacecraft was physically present in each cell. Answers: *"how long did the spacecraft actually spend in this region?"*
 
-> ⚠️ If the DataFrame already contains a `time_interval` column, `_add_time_intervals` is skipped entirely and `gap_hours` is silently ignored. Pre-computed intervals bypass all pass-gap logic.
+> If the DataFrame already contains a `time_interval` column, `_add_time_intervals` is skipped entirely and `gap_hours` is silently ignored. Pre-computed intervals bypass all pass-gap logic.
 
 ---
 
