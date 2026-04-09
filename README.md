@@ -21,8 +21,8 @@ During the project several directories has been created. The below details will 
 
 * `assets/`: It contains all the outcomes of the project.
         - `3D_Objects_03/`: It has all the visuals and corresponding calculated dataset. During the project multiple version of `3D_Objects_XX` were created. Please consider `3D_Objects_03/` as the final outcomes.
-
         - `gaussian_processes_model_checkpoints/`: It has model checkpoint and elbow plot for the gaussian process modeling. However it didn't fit well.
+        - `binomial_model_checkpoints/`: It has model summary and plots from GLM (Bionomial)
 
 ```markdown
 somu796-akr_3d_map/
