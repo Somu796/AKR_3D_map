@@ -73,7 +73,7 @@ model = gpflow.models.SVGP(
 # %% 9. Setup Checkpointing (MUST BE HERE)
 optimizer = tf.optimizers.Adam(learning_rate=0.0005)
 ckpt = tf.train.Checkpoint(model=model, optimizer=optimizer)
-checkpoint_dir = project_root / "assets" / "model_checkpoints"
+checkpoint_dir = project_root / "assets" / "gaussian_processes_model_checkpoints"
 checkpoint_dir.mkdir(parents=True, exist_ok=True)
 
 manager = tf.train.CheckpointManager(ckpt, str(checkpoint_dir), max_to_keep=1)
@@ -160,11 +160,11 @@ fig.update_layout(
 )
 
 # Save as interactive HTML for your dashboard
-plot_html_path = project_root / "assets" / "elbo_plot.html"
+plot_html_path = checkpoint_dir / "elbo_plot.html"
 fig.write_html(str(plot_html_path))
 
 # Also save as a static image for reports
-plot_png_path = project_root / "assets" / "elbo_plot.png"
+plot_png_path = checkpoint_dir / "elbo_plot.png"
 fig.write_image(str(plot_png_path))
 
 print(f"Interactive plot saved to: {plot_html_path}")
@@ -176,7 +176,7 @@ print_summary(model)
 # import joblib
 
 # # Load the "key" to your coordinate system
-# scaler = joblib.load("./assets/model_checkpoints/scaler.pkl")
+# scaler = joblib.load("./assets/gaussian_processes_model_checkpoints/scaler.pkl")
 
 # # Use .transform() (NOT fit_transform) on new grid points
 # # raw_grid_coords shape should be (N, 3)
